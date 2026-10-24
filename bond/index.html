@@ -168,32 +168,32 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
 <header class="top">
   <div class="eyebrow">Design overview</div>
   <h1>LX Bond</h1>
-  <p class="pitch">LX Bond is a connection that neither drops nor gets blocked: every available channel (several SIM cards, fibre, Starlink) adds up to one, and from the outside the traffic looks like ordinary HTTPS.</p>
+  <p class="pitch">LX Bond is a sing-box core feature: it adds several channels (SIM cards, fibre, Starlink) into one connection that survives losing a channel. Each channel rides inside an ordinary sing-box tunnel, so from the outside the traffic looks like TLS or QUIC.</p>
   <p class="lede">A walkthrough of the multipath bonding protocol as the Design Decision Record settles it: what crosses the wire, how the sender picks a path, how the receiver tells a lost packet from a late one, and what happens when a channel drops. Every animated figure starts as a complete static drawing; Play steps through it. The approved decisions are collected in section 13.</p>
   <div class="meta"><span>Source: SPECS/DESIGN/DDR.md, BRIEF.md</span><span>Protocol: <code>bond</code> endpoint + inbound</span><span><a href="ru.html" hreflang="ru" lang="ru">Русская версия</a></span></div>
   <nav class="toc" aria-label="Sections">
     <ol>
-      <li><a href="#s1"><span>1</span>Why</a></li>
-      <li><a href="#s2"><span>2</span>Topology<em>anim</em></a></li>
-      <li><a href="#s3"><span>3</span>Keys and handshake<em>anim</em></a></li>
-      <li><a href="#s4"><span>4</span>The frame</a></li>
-      <li><a href="#s5"><span>5</span>Scheduler<em>anim</em></a></li>
-      <li><a href="#s6"><span>6</span>Receiver<em>anim</em></a></li>
-      <li><a href="#s7"><span>7</span>Feedback<em>anim</em></a></li>
-      <li><a href="#s8"><span>8</span>Redundancy<em>anim</em></a></li>
-      <li><a href="#s9"><span>9</span>Path life<em>anim</em></a></li>
-      <li><a href="#s10"><span>10</span>Observability</a></li>
-      <li><a href="#s11"><span>11</span>Verification</a></li>
-      <li><a href="#s12"><span>12</span>Config</a></li>
+      <li><a href="#s1"><span>1</span>One download gets the sum of the channels</a></li>
+      <li><a href="#s2"><span>2</span>All paths of a session end on one node<em>anim</em></a></li>
+      <li><a href="#s3"><span>3</span>Every path runs its own Noise handshake<em>anim</em></a></li>
+      <li><a href="#s4"><span>4</span>A frame adds 30 bytes to a packet</a></li>
+      <li><a href="#s5"><span>5</span>The scheduler sends a frame where it lands first<em>anim</em></a></li>
+      <li><a href="#s6"><span>6</span>The receiver tells loss from lateness<em>anim</em></a></li>
+      <li><a href="#s7"><span>7</span>The receiver reports every 15 ms<em>anim</em></a></li>
+      <li><a href="#s8"><span>8</span>Copies for critical traffic, FEC for bursty loss<em>anim</em></a></li>
+      <li><a href="#s9"><span>9</span>A path leaves service and returns through probes<em>anim</em></a></li>
+      <li><a href="#s10"><span>10</span>Status is three gRPC calls and a CLI</a></li>
+      <li><a href="#s11"><span>11</span>A simulator tests the protocol before any bench</a></li>
+      <li><a href="#s12"><span>12</span>Configuration: paths are nested in servers entries</a></li>
       <li><a href="#s13"><span>13</span>Approved decisions</a></li>
-      <li><a href="#s14"><span>14</span>Feature tiers</a></li>
+      <li><a href="#s14"><span>14</span>What goes into MVP, v1 and Later</a></li>
     </ol>
   </nav>
 </header>
 
 <!-- 0 -->
 <section class="sec pitch-sec" id="s0">
-  <div class="sec-h"><h2>The problem and the market</h2></div>
+  <div class="sec-h"><h2>Existing tools do not bond channels under DPI</h2></div>
   <h3>Competitors: why what exists does not meet the need</h3>
   <div class="tbl"><table>
     <thead><tr><th>Class</th><th>Examples</th><th>What is missing</th></tr></thead>
@@ -207,23 +207,27 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
   <div class="tbl"><table>
     <thead><tr><th>Promise to the customer</th><th>What backs it</th></tr></thead>
     <tbody>
-      <tr><td>A call does not drop when a channel goes away</td><td>Critical packets (voice, DNS, connection set-up) are duplicated within a 10 % budget</td></tr>
-      <tr><td>One download or stream gets the sum of the channels</td><td>Packet-level aggregation, a scheduler by predicted arrival time (ECF + BLEST)</td></tr>
-      <tr><td>Never worse than the best single channel</td><td>A guaranteed lower bound, built into the design (BRIEF 9)</td></tr>
-      <tr><td>Works where VPNs are cut</td><td>Every path rides inside a camouflaging transport (REALITY, XHTTP, QUIC); different channels can use different protocols</td></tr>
-      <tr><td>No stutter on poor LTE</td><td>Adaptive FEC from a bursty-loss model; a cap on data in flight so buffers do not bloat</td></tr>
-      <tr><td>Transparent operation</td><td>Metrics, an event log, incident capture (DDR §12)</td></tr>
+      <tr><td>A call survives losing one channel</td><td>Small critical packets (voice marked DSCP EF, DNS, connection set-up) go as two copies on different paths; copies take at most 10 % of the traffic</td></tr>
+      <tr><td>One download or stream gets the sum of the channel rates minus the cost of reordering</td><td>The packets of one flow go over every channel; the scheduler sends each one where it lands first (ECF + BLEST)</td></tr>
+      <tr><td>No worse than the best single channel</td><td>Fallback mode: when bonding delivers less than 0.9 of the best channel's rate or the estimates go stale, all traffic moves to that channel (BRIEF 9, DDR §5.9)</td></tr>
+      <tr><td>Works where the operator cuts VPNs</td><td>Every path rides inside a camouflaging transport (REALITY, XHTTP, QUIC); different channels can use different transports</td></tr>
+      <tr><td>LTE loss does not turn into pauses</td><td>FEC turns on at 0.2 % loss and rebuilds a packet without a resend; the receiver waits for a late packet at most 200 ms; a cap on data in flight keeps buffers from bloating</td></tr>
+      <tr><td>Metrics and an event log for operations</td><td>A counter for every release and drop reason, an event ring with first and last incident slots, three gRPC calls and a CLI (DDR §12)</td></tr>
     </tbody></table></div>
-  <p class="field">Built for hard field conditions with restrictions and DPI.</p>
+  <p class="field">The scenario the defaults are tuned for: 3–10 channels from different operators (LTE/5G, fibre, satellite), loss in bursts, handovers up to 0.4 s, and DPI that cuts recognisable tunnels.</p>
 </section>
 
 <!-- 1 -->
 <section class="sec" id="s1">
-  <div class="sec-h"><span class="sec-n">1</span><h2>Why</h2><span class="ddr">DDR §1</span></div>
-  <p>LX Bond is a core feature: it spreads the packets of a single flow over the network interfaces it is given and reassembles them on an aggregation node in a data centre, so one TCP download can use the sum of the channels' bandwidth. In practice that means 3–10 channels; the hard limit is 16 paths per session, and the limits, overhead budgets and tests are sized for that worst case. Bond takes interfaces as input and assumes nothing about the hardware behind them. Per-connection balancing over several interfaces already works with core features; bond adds packet-level bonding on top. Operators' DPI cuts recognisable tunnels (WireGuard, OpenVPN, IPsec), so each channel is an ordinary sing-box tunnel (vless+REALITY, XHTTP, hysteria2, tuic, wg, masque) bound to one interface, and bond frames ride inside those tunnels. The node runs the same <code>sing-box</code> binary with a <code>bond</code> inbound; traffic exits with the node's address, through a primary or a standby DC.</p>
+  <div class="sec-h"><span class="sec-n">1</span><h2>One download gets the sum of the channels</h2><span class="ddr">DDR §1</span></div>
+  <p>LX Bond is a sing-box core feature. It spreads the packets of a single flow over several channels and reassembles them on an aggregation node in a data centre. So one TCP download gets the sum of the channels' bandwidth.</p>
+  <p>Three terms hold throughout this document. A channel is a physical connection behind one network interface: a SIM card, fibre, Starlink. A path is a bond tunnel over one channel. A node is an aggregation server in a DC; in the configuration it is a <code>servers</code> entry. Bond takes interfaces as input and assumes nothing about the hardware behind them.</p>
+  <p>A typical client has 3–10 channels. The hard limit is 16 paths per session; the limits, overhead budgets and tests are sized for that worst case.</p>
+  <p>The core without bond balances per connection: each connection goes whole over one channel. Bond adds packet-level bonding: the packets of one connection go over every channel.</p>
+  <p>Operators' DPI cuts recognisable tunnels: WireGuard, OpenVPN, IPsec. So each path rides inside an ordinary sing-box tunnel (vless+REALITY, XHTTP, hysteria2, tuic, wg, masque) bound to one interface. The node runs the same <code>sing-box</code> binary with a <code>bond</code> inbound; traffic exits to the internet with the node's address, through a primary or a standby DC.</p>
   <figure>
     <div class="svgwrap"><svg viewBox="0 0 820 190" role="img" aria-label="Per-connection balancing pins each flow to one channel, so one flow gets one channel's rate. Packet-level bonding spreads one flow's packets over all channels and reassembles them at the node.">
-      <text x="10" y="20" class="t-b">Core today · per-connection balancing</text>
+      <text x="10" y="20" class="t-b">Core without bond · per-connection balancing</text>
       <text x="420" y="20" class="t-b">Bond · packet-level bonding (this design)</text>
       <g>
         <rect x="10" y="40" width="70" height="120" rx="4" class="box"/><text x="45" y="104" text-anchor="middle" class="t-s">client</text>
@@ -255,12 +259,12 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
     </svg></div>
     <figcaption>The difference between the two approaches: per-connection balancing keeps every flow on one channel; bond numbers the packets of one flow, spreads them over every channel and puts them back in order at the node.</figcaption>
   </figure>
-  <p>Non-goals: no wire compatibility with MPTCP or Multipath QUIC, no L2 bridging, no server-initiated paths, no business logic on the node beyond the inbound, nothing in the public repository.</p>
+  <p>Non-goals: wire compatibility with MPTCP and Multipath QUIC, L2 bridging, server-initiated paths, business logic on the node beyond the inbound. Bond code is not part of the open sing-box core.</p>
 </section>
 
 <!-- 2 -->
 <section class="sec" id="s2">
-  <div class="sec-h"><span class="sec-n">2</span><h2>Topology</h2><span class="ddr">DDR §1.2, §4.7, §11</span></div>
+  <div class="sec-h"><span class="sec-n">2</span><h2>All paths of a session end on one node</h2><span class="ddr">DDR §1.2, §4.7, §11</span></div>
   <p>The client is a <code>bond</code> endpoint: a TUN-like L3 device (gVisor stack) that receives IP packets from routing. It owns N paths; each path is a <code>detour</code> to an ordinary outbound whose leaf carries <code>bind_interface</code> for one interface. Every path dials the node's bond listener at its public address (a WG stack drops loopback destinations, and a masque path exits at the far tunnel end). On the node, the path's proxy inbound (wg, hysteria2, vless) hands the stream or datagrams to the <code>bond</code> inbound, which joins the paths into one session, reassembles, and emits packets into the router. One session terminates on one node; paths are never split across nodes.</p>
   <p>The nodes are the <code>servers</code> list, each with its own address, key, device address and paths. Paths belong to a server because in the reference deployment the proxies run inside that node's process and die with it. Servers are tried by <code>priority</code>; equal priorities are ordered at random once at start, so clients spread over equal nodes. A failover is a new session with a new <code>sid</code>.</p>
   <figure class="anim" id="f2">
@@ -310,7 +314,7 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
 
 <!-- 3 -->
 <section class="sec" id="s3">
-  <div class="sec-h"><span class="sec-n">3</span><h2>Keys and handshake</h2><span class="ddr">DDR §1.2, §3.2–3.5</span></div>
+  <div class="sec-h"><span class="sec-n">3</span><h2>Every path runs its own Noise handshake</h2><span class="ddr">DDR §1.2, §3.2–3.5</span></div>
   <p>Identity is a static X25519 key pair, WireGuard-style. The client config holds its own <code>private_key</code> and, in each <code>servers</code> entry, that node's <code>public_key</code>; the node holds its <code>private_key</code> and the list <code>users[].public_key</code>. Keys are bare base64 (44 characters), compatible with <code>sing-box generate wg-keypair</code>. An optional <code>pre_shared_key</code> is mixed in as psk2 and is never the identity.</p>
   <p>Each path runs its own Noise IKpsk2 handshake (X25519, ChaCha20-Poly1305, BLAKE2s), WireGuard's construction with the cleartext handshake header bound into the prologue. All paths handshake in parallel, one round trip each. The client chooses the 128-bit <code>sid</code>; each side assigns the <code>pcid</code> it wants to see on frames it receives (<code>client_pcid</code> in INIT, <code>server_pcid</code> in RESP).</p>
   <figure class="anim" id="f3">
@@ -340,7 +344,7 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
 
 <!-- 4 -->
 <section class="sec" id="s4">
-  <div class="sec-h"><span class="sec-n">4</span><h2>The frame</h2><span class="ddr">DDR §2.1–2.3</span></div>
+  <div class="sec-h"><span class="sec-n">4</span><h2>A frame adds 30 bytes to a packet</h2><span class="ddr">DDR §2.1–2.3</span></div>
   <p>Every frame on every path carries the same fixed 14-byte header, big-endian, no varints. The header is cleartext and authenticated as AAD; the body is encrypted; a 16-byte tag closes the frame. On stream paths each frame is preceded by a 2-byte length. <code>pcid</code> buys rebinding without path death and <code>ts</code> buys the timer-free release rule and the deviation guard. Hover or focus a field.</p>
   <figure id="f4">
     <div class="svgwrap"><svg viewBox="0 0 820 300" role="img" aria-label="Byte map of the bond frame header drawn to scale: optional 2-byte length, then type and flags 1 byte, pcid 3, psn 3, dsn 4, ts 3; below, a whole DATA frame with a 1280-byte packet drawn to scale, where bond adds 30 bytes.">
@@ -375,7 +379,7 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
     <thead><tr><th>T</th><th>Name</th><th>Dir.</th><th>Flags</th><th>Body</th><th class="num">Size excl. payload</th></tr></thead>
     <tbody>
       <tr><td class="code">0x0</td><td class="code">DATA</td><td>both</td><td><code>D</code> duplicate · <code>F</code> FEC member · <code>R</code> report requested · <code>A</code> ack now</td><td>IP packet</td><td class="num">30 (32 with F)</td></tr>
-      <tr><td class="code">0x1</td><td class="code">REPAIR</td><td>both</td><td>—</td><td>parity symbol, <code>desc(2)</code> cleartext before it (v1)</td><td class="num">32</td></tr>
+      <tr><td class="code">0x1</td><td class="code">REPAIR</td><td>both</td><td>—</td><td>parity symbol, <code>desc(2)</code> cleartext before it</td><td class="num">32</td></tr>
       <tr><td class="code">0x2</td><td class="code">FENCE</td><td>both</td><td><code>K</code> keepalive · <code>P</code> padded probe · <code>R</code> · <code>A</code></td><td><code>cover(1)</code>: covering / exempt; padding when <code>P</code></td><td class="num">31</td></tr>
       <tr><td class="code">0x3</td><td class="code">REPORT</td><td>both</td><td><code>E</code> event-triggered · <code>P</code> path ack</td><td>19-byte fixed part + 41-byte per-path records; with <code>P</code> (PATH_ACK): one record for the carrying path</td><td class="num">49 + 41·n; P: 71</td></tr>
       <tr><td class="code">0x4</td><td class="code">CLOSE</td><td>both</td><td><code>S</code> session scope</td><td><code>reason(1) detail(2)</code>; reasons 0x00–0x7F close (shutdown, superseded, stream_psn…), 0x80+ are errors: LIMIT, ADDRESS, PROTOCOL, MTU</td><td class="num">33</td></tr>
@@ -388,10 +392,12 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
 
 <!-- 5 -->
 <section class="sec" id="s5">
-  <div class="sec-h"><span class="sec-n">5</span><h2>Scheduler: earliest delivery</h2><span class="ddr">DDR §5.3–5.7</span></div>
+  <div class="sec-h"><span class="sec-n">5</span><h2>The scheduler sends a frame where it lands first</h2><span class="ddr">DDR §5.3–5.7</span></div>
   <p>The sender does not round-robin. For each frame at the head of the ingress FIFO it predicts, per path, when the frame would arrive, and sends it where it lands first:</p>
   <pre>A(p, s) = owd_min_p + q_model_p + q_exo_p + s/btl_p</pre>
-  <p><code>q_model</code> is the queue our own sends built (it reacts instantly); <code>q_exo</code> is the smoothed queue we did not cause (radio scheduler, proxy, HOL). When the fastest path <code>f</code> is cap-blocked, a slower path <code>g</code> is used if it still delivers first counting the backlog <code>B</code> waiting behind the head (ECF with the backlog term, Lim et al. 2017), or if <code>f</code> has been saturated for one <code>srtt_f</code> and <code>g</code>'s lateness fits the BLEST budget (Ferlin et al. 2016). The budget is per path: it starts at <code>max_latency − 4·dev_g − 2 ms</code> (between 0.25 and 0.9 of <code>max_latency</code>) and adapts once per feedback delay. After a hold, a slower path needs a 25 % margin before it is taken again.</p>
+  <p><code>q_model</code> is the queue our own sends built; it reacts instantly. <code>q_exo</code> is the smoothed queue we did not cause: radio scheduler, proxy, HOL.</p>
+  <p>When the fastest path <code>f</code> is cap-blocked, the sender takes a slower path <code>g</code> if <code>g</code> still delivers first counting the backlog <code>B</code> behind the head (ECF with the backlog term, Lim et al. 2017). The second case: <code>f</code> has been saturated for one <code>srtt_f</code> and <code>g</code>'s lateness fits the BLEST budget (Ferlin et al. 2016).</p>
+  <p>The BLEST budget is per path. It starts at <code>max_latency − 4·dev_g − 2 ms</code> (between 0.25 and 0.9 of <code>max_latency</code>) and adapts once per feedback delay. After a hold, a slower path needs a 25 % margin before it is taken again.</p>
   <pre>BDP_p  = btl_p · ack_min_p
 cap_p  = max(BDP_p, clamp(1.25·BDP_p + btl_p·T_report, 4·max_frame, cap_ceiling_p))</pre>
   <p>The inflight cap is BBR's <code>cwnd_gain·BDP</code> plus the bytes acknowledged but not yet reported within one interval. The 1.25 gain is a default because LTE acknowledgement batching and DRX delay feedback <span class="verify">to verify on the stand: R-1</span>. Cold start seeds <code>btl</code> at 1 Mbit/s and grows per <code>srtt</code> round with BBR's STARTUP pacing gain 2/ln 2 ≈ 2.89 and a cap gain of 2.0, for at most 2 s; the cap also absorbs measured ACK aggregation.</p>
@@ -408,7 +414,7 @@ cap_p  = max(BDP_p, clamp(1.25·BDP_p + btl_p·T_report, 4·max_frame, cap_ceili
 
 <!-- 6 -->
 <section class="sec" id="s6">
-  <div class="sec-h"><span class="sec-n">6</span><h2>Receiver: lost or late</h2><span class="ddr">DDR §6.1–6.4</span></div>
+  <div class="sec-h"><span class="sec-n">6</span><h2>The receiver tells loss from lateness</h2><span class="ddr">DDR §6.1–6.4</span></div>
   <p>Every frame carries two numbers: the session-wide DSN (release order) and its path's PSN (per-path loss accounting), as MPTCP's DSN/SSN. The receiver releases strictly by DSN from its cursor <code>R</code>. A path <em>covers</em> <code>R</code> once it has delivered a frame enqueued after <code>R</code> with no undecided hole below it; because every frame is stamped inside one critical section, DSN (or the <code>dsn_high</code> cover of a control frame) increases with PSN on every path.</p>
   <pre>hole h on p is lost on p   when  now − t_after(h) ≥ reo_wnd_p            (RACK time threshold)
 reo_wnd_p  = clamp(max(4·dev_p, reo_learned_p), 2 ms, reo_max_p)        reo_max 20 → 60 ms, ≤ max(20 ms, srtt_p)
@@ -428,8 +434,10 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
 
 <!-- 7 -->
 <section class="sec" id="s7">
-  <div class="sec-h"><span class="sec-n">7</span><h2>Feedback</h2><span class="ddr">DDR §7.1–7.5</span></div>
-  <p>The receiver sends a REPORT every <code>T_report</code> = 15 ms (allowed 10–20 ms) while frames arrive, or early once 32 frames arrived and at least 2 ms passed since the last one. Nothing is sent when nothing was received. A REPORT is 49 + 41·n bytes: a 19-byte fixed part (release cursor <code>dsn_next</code>, free reorder bytes, wait and depth, cumulative guard and late counters) and one 41-byte record per path with new frames, aligned to the arrival of <code>psn_high</code>. It travels on the path with the smallest <em>reverse</em> delay; a second copy goes to the second-best path every 4th report and on every event report. PATH_ACK carries one record on its own path (≤ 1 per max(T_report, 50 ms)) to give a same-path RTT sample. If no report arrives for 2·T_report + srtt_best (floor 50 ms) while frames are outstanding, the sender sends FENCE R on every live path.</p>
+  <div class="sec-h"><span class="sec-n">7</span><h2>The receiver reports every 15 ms</h2><span class="ddr">DDR §7.1–7.5</span></div>
+  <p>The receiver sends a REPORT every <code>T_report</code> = 15 ms (allowed 10–20 ms) while frames arrive. A report goes early once 32 frames arrived and at least 2 ms passed since the last one. Nothing is sent when nothing was received.</p>
+  <p>A REPORT is 49 + 41·n bytes. The 19-byte fixed part carries the release cursor <code>dsn_next</code>, free reorder bytes, wait and depth, cumulative guard and late counters. After it comes one 41-byte record per path with new frames; the record is aligned to the arrival of <code>psn_high</code>.</p>
+  <p>The report travels on the path with the smallest <em>reverse</em> delay. A second copy goes to the second-best path every 4th report and on every event report. PATH_ACK carries one record on its own path, at most once per max(T_report, 50 ms), and gives a same-path RTT sample. If no report arrives for 2·T_report + srtt_best (floor 50 ms) while frames are outstanding, the sender sends FENCE R on every live path.</p>
   <figure>
     <div class="svgwrap"><svg viewBox="0 0 820 150" role="img" aria-label="The 41-byte per-path REPORT record drawn to scale, 19 px per byte, with fifteen fields from pcid to owd_last.">
       <g class="rec"></g>
@@ -451,8 +459,8 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
 
 <!-- 8 -->
 <section class="sec" id="s8">
-  <div class="sec-h"><span class="sec-n">8</span><h2>Redundancy</h2><span class="ddr">DDR §5.9, §8</span></div>
-  <p>The policy is a hybrid by traffic class, in RAID terms. Bulk is <strong>striped</strong> (RAID 0) and never duplicated. Small critical packets (≤ 200 bytes including the IP header) are <strong>duplicated</strong> (RAID 1) on a second path with flag <code>D</code> and the same DSN; the receiver keeps the first copy. <strong>FEC</strong> (RAID 5/6: systematic Reed–Solomon over GF(2^8)) arrives in v1 on top of striping, at a rate that grows with measured bursty loss and is off on clean channels.</p>
+  <div class="sec-h"><span class="sec-n">8</span><h2>Copies for critical traffic, FEC for bursty loss</h2><span class="ddr">DDR §5.9, §8</span></div>
+  <p>The policy is a hybrid by traffic class, in RAID terms. Bulk is <strong>striped</strong> (RAID 0) and never duplicated. Small critical packets (≤ 200 bytes including the IP header) are <strong>duplicated</strong> (RAID 1) on a second path with flag <code>D</code> and the same DSN; the receiver keeps the first copy. <strong>FEC</strong> (RAID 5/6: systematic Reed–Solomon over GF(2^8)) is in the MVP, on top of striping, at a rate that grows with measured bursty loss and is off on clean channels.</p>
   <div class="tbl"><table>
     <thead><tr><th>Tier</th><th>Matches (len ≤ 200 B)</th><th>Budget</th></tr></thead>
     <tbody>
@@ -468,14 +476,16 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
     <div class="ctl"><button data-act="play">Play</button><button data-act="reset">Reset</button><input type="range" aria-label="Animation timeline"><span class="clock"></span></div>
     <figcaption><span class="stepn"></span><span class="step"></span></figcaption>
   </figure>
-  <p><strong>FEC rate law (v1).</strong> Per path the sender estimates a Gilbert–Elliott chain: loss fraction <code>π_p</code> and mean bad-period duration <code>T_bad_p</code> in seconds, converted to a burst length in symbols at the current frame rate. Group size <code>k = clamp(round(10 ms · f_fec), 4, 32)</code> follows the offered non-duplicated frame rate; the repair count <code>r</code> is the smallest one whose residual, computed exactly per path on the Gilbert–Elliott chain, meets a target of 0.1 %, counting repair losses on the same chain as the members, never above <code>floor(k·30 %)</code> or the wire maximum 8. FEC turns on when the traffic-weighted loss Σ w_p·π_p ≥ 0.2 % for at least 1 s with at least 8 loss runs counted, and off below 0.05 % for 10 s. If 30 % overhead cannot at least halve the loss, FEC goes off, the lossy paths are demoted, duplicates stay, and with every path lossy the session falls back. Worked example from the DDR: at mean burst L = 3 and r = 6 the residual is 26.3 % of the raw loss.</p>
+  <p><strong>FEC rate law.</strong> Per path the sender estimates a Gilbert–Elliott chain: loss fraction <code>π_p</code> and mean bad-period duration <code>T_bad_p</code> in seconds, converted to a burst length in symbols at the current frame rate. Group size <code>k = clamp(round(10 ms · f_fec), 4, 32)</code> follows the offered non-duplicated frame rate; the repair count <code>r</code> is the smallest one whose residual, computed exactly per path on the Gilbert–Elliott chain, meets a target of 0.1 %, counting repair losses on the same chain as the members, never above <code>floor(k·30 %)</code> or the wire maximum 8. FEC turns on when the traffic-weighted loss Σ w_p·π_p ≥ 0.2 % for at least 1 s with at least 8 loss runs counted, and off below 0.05 % for 10 s. If 30 % overhead cannot at least halve the loss, FEC goes off, the lossy paths are demoted, duplicates stay, and with every path lossy the session falls back. Worked example from the DDR: at mean burst L = 3 and r = 6 the residual is 26.3 % of the raw loss.</p>
   <p><strong>Lower bound.</strong> <code>fallback</code> mode puts all primary DATA on the one path with the best expected goodput (mean rate × (1 − loss) over 5 s, never lowest delay), tier-1/2 duplicates on the second, FEC off, every other path exempt and probed. It is entered when estimates go stale, reports vanish, late releases exceed 5 %, or the delivered rate stays below 0.9 × the best single path while the FIFO is busy; it is left only after a 2 s re-probe predicts ≥ 1.1 × the fallback path.</p>
 </section>
 
 <!-- 9 -->
 <section class="sec" id="s9">
-  <div class="sec-h"><span class="sec-n">9</span><h2>Path life</h2><span class="ddr">DDR §4.1–4.7</span></div>
-  <p>The sender judges its paths from the receiver's records. A path is <code>suspect</code> when frames above <code>psn_high</code> are outstanding and the oldest has waited longer than <code>rto_p = srtt_p + 4·rttvar_p + T_report</code> (floor <code>rto_min</code> 50 ms, no ceiling); the clock restarts on every record that advances <code>psn_high</code>, so a single lost frame never makes a delivering path suspect. Suspect for <code>dead_after</code> = max(1.5 s, 3·<code>rto_p</code>) means <code>dead</code>: three probe periods, well above the ≤ 0.4 s of an LTE/5G handover; after silence <code>rto_p</code> gains a radio-wake allowance (400 ms after a short pause, 0.75–2 s after idle), so a waking radio is not taken for a stall. Demotion to <code>backup</code> uses factor 2 against the median of the other active paths; promotion needs factor 1.5 held for <code>promote_after</code> = 10 s. A returning path re-enters as backup for <code>return_hold</code>: 10 s, doubling up to 60 s only for deaths with an outage over 5 s or a failed first re-dial, halving after each quiet 10 min.</p>
+  <div class="sec-h"><span class="sec-n">9</span><h2>A path leaves service and returns through probes</h2><span class="ddr">DDR §4.1–4.7</span></div>
+  <p>The sender judges its paths from the receiver's records. A path turns <code>suspect</code> when frames above <code>psn_high</code> are outstanding and the oldest has waited longer than <code>rto_p = srtt_p + 4·rttvar_p + T_report</code> (floor <code>rto_min</code> 50 ms, no ceiling). The clock restarts on every record that advances <code>psn_high</code>, so a single lost frame does not make a delivering path suspect. After silence <code>rto_p</code> gains a radio-wake allowance: 400 ms after a short pause, 0.75–2 s after idle. So a waking radio is not taken for a stall.</p>
+  <p>A path that stays <code>suspect</code> longer than <code>dead_after</code> = max(1.5 s, 3·<code>rto_p</code>) turns <code>dead</code>. That is three probe periods, with a margin over an LTE/5G handover, which lasts up to 0.4 s.</p>
+  <p>Demotion to <code>backup</code> uses factor 2 against the median of the other active paths; promotion needs factor 1.5 held for <code>promote_after</code> = 10 s. A returning path re-enters in the <code>backup</code> role for <code>return_hold</code> = 10 s. That hold doubles, up to 60 s, only after a death with an outage over 5 s or a failed first re-dial, and halves after each quiet 10 min.</p>
   <figure class="anim" id="f9">
     <div class="svgwrap"><svg viewBox="0 0 820 420" role="img" aria-label="Path state machine above a time line to scale in seconds: path B goes from active to suspect to dead during an LTE handover, re-dials after backoff, probes, returns as backup and is promoted to active after ten seconds; the data share of paths A, B and C is drawn below.">
       <g class="st"></g><g class="dyn"></g>
@@ -485,7 +495,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
     <figcaption><span class="stepn"></span><span class="step"></span></figcaption>
   </figure>
   <p>Handshake timing: INIT at t0, retransmitted at +1 s and +3 s with fresh ephemerals, <code>handshake_timeout</code> at +7 s. A dead path re-dials on its own backoff 1, 2, 4 … 30 s ±20 %. With no path established the session runs handshake cycles on every path at once and backs off 5 → 60 s between them, each wait drawn in 50–100 % of its step. Keepalive is one <code>FENCE K</code> per live datagram path every 20–25 s (below most NAT UDP timeouts), 15 s on a path whose binding was lost after idle; it is the only timer that runs while idle.</p>
-  <h3>DC failover, to scale</h3>
+  <h3>Failover to the standby DC takes up to 29 s</h3>
   <figure>
     <div class="svgwrap"><svg viewBox="0 0 820 170" role="img" aria-label="Failover bound to scale: 2 s detection, two handshake cycles of 7 s or 10 s, 6 s session backoff and 1 s join, about 23 s with connectionless paths and about 29 s when some path's dial reaches the node.">
       <g class="fo"></g>
@@ -496,7 +506,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
 
 <!-- 10 -->
 <section class="sec" id="s10">
-  <div class="sec-h"><span class="sec-n">10</span><h2>Observability</h2><span class="ddr">DDR §12</span></div>
+  <div class="sec-h"><span class="sec-n">10</span><h2>Status is three gRPC calls and a CLI</h2><span class="ddr">DDR §12</span></div>
   <p>Status follows the core's rule for endpoints: a unary <code>GetBondStatus(tag)</code> getter in the lx command protocol, not a field in <code>GetOutbounds</code> and not a tick in a stream. The node gets <code>GetBondInboundStatus(tag, filter, page)</code> (64 sessions per page by default, 256 max), and a separate <code>GetBondDebugDump(tag, ring, max_bytes)</code> returns one ring per call (1 MiB default, 3.5 MiB hard cap under grpc-go's 4 MiB limit). Metrics are raw facts: cumulative counters, monotonic stamps, ages and rates computed at read; every release and drop reason is its own counter. Carriers are gRPC over the lxd mTLS listener and the CLI <code>api bond</code> / <code>bond-inbound</code> / <code>bond-dump</code>; the stand collector polls 1–5 s and pulls dumps before every scripted stop.</p>
   <div class="cols">
     <div style="grid-column:1/-1">
@@ -554,7 +564,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
 
 <!-- 11 -->
 <section class="sec" id="s11">
-  <div class="sec-h"><span class="sec-n">11</span><h2>Verification</h2><span class="ddr">DDR §16</span></div>
+  <div class="sec-h"><span class="sec-n">11</span><h2>A simulator tests the protocol before any bench</h2><span class="ddr">DDR §16</span></div>
   <p>Level 1 is primary: the maths is verified there before any stand is built. Every gate judges what the model or the stand did, in ground-truth terms, never the bond's own estimates.</p>
   <figure>
     <div class="svgwrap"><svg viewBox="0 0 820 330" role="img" aria-label="Three verification levels: Level 1 in-process deterministic simulation, Level 2 two sing-box processes on macOS dummynet, Level 3 live WARP and Liberty paths with injected throttling; recorded LTE profiles feed Level 1.">
@@ -605,7 +615,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
 
 <!-- 12 -->
 <section class="sec" id="s12">
-  <div class="sec-h"><span class="sec-n">12</span><h2>Config</h2><span class="ddr">DDR §11.1–11.2</span></div>
+  <div class="sec-h"><span class="sec-n">12</span><h2>Configuration: paths are nested in servers entries</h2><span class="ddr">DDR §11.1–11.2</span></div>
   <p>Both sides use type <code>bond</code>. Abridged from the DDR's full examples; key names are exact.</p>
   <h3>Client endpoint</h3>
 <pre class="js-hl">{
@@ -771,7 +781,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
       <tr><td class="code">7.2</td><td>Per-path 41-byte records with cumulative counters, aligned to <code>psn_high</code>; field semantics follow the signalled semantics class.</td><td class="code">§7.1</td></tr>
       <tr><td class="code">7.3</td><td>Report path chosen by the reverse direction's delay; second copy every 4th report and on E reports.</td><td class="code">§7.3</td></tr>
       <tr><td class="code">7.4</td><td>PATH_ACK for same-path RTT; FENCE R recovers a dead report path within one RTT.</td><td class="code">§7.2, §7.4</td></tr>
-      <tr><td class="code">7.5</td><td>Path death is declared <code>T_report + 4·rttvar</code> after a report was due (never earlier than <code>rto_min</code> 50 ms after the send): 1–2 intervals on a steady path, later on a jittery one.</td><td class="code">§16.1, §17</td></tr>
+      <tr><td class="code">7.5</td><td>The sender stops scheduling new DATA on a path <code>T_report + 4·rttvar</code> after a report was due (never earlier than <code>rto_min</code> 50 ms after the send): 1–2 intervals on a steady path, later on a jittery one. The path is declared <code>dead</code> later, after <code>dead_after</code> (9.1).</td><td class="code">§16.1, §17</td></tr>
       <tr><td class="code">8.1</td><td>Duplication tiers 1–3 share one 10 % budget, tier 1 served first; copies go to the next-best path with loss ≤ max(primary, 5 %).</td><td class="code">§8.1–8.2</td></tr>
       <tr><td class="code">8.2</td><td>Bulk is never duplicated and no <code>duplicate: "all"</code> mode exists.</td><td class="code">§8.1</td></tr>
       <tr><td class="code">8.3</td><td>FEC is block Reed–Solomon (Cauchy) through <code>klauspost/reedsolomon</code>, k 4–32, r 1–8, 30 % cap.</td><td class="code">§8.3</td></tr>
@@ -806,7 +816,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
       <tr><td>Platforms</td><td>Linux, amd64 and arm64, on client hosts and nodes</td><td class="code">§0</td></tr>
       <tr><td>Portability</td><td>the protocol core (frames, handshake, scheduler, receiver, FEC) depends on no sing-box package; everything tied to the sing-box core sits in a thin adapter</td><td class="code">§1.5</td></tr>
       <tr><td>Status</td><td>three gRPC calls (<code>GetBondStatus</code>, <code>GetBondInboundStatus</code>, <code>GetBondDebugDump</code>) and a CLI; the message schema is added by the private build on top of the core, the public core does not carry it</td><td class="code">§12.4, §12.5</td></tr>
-      <tr><td>Path death</td><td><code>T_report + 4·rttvar</code> after a report was due, never earlier than 50 ms after the send: 1–2 intervals on a steady path, later on a jittery one; reinjection starts earlier, at <code>suspect</code></td><td class="code">§4.4, §5.10</td></tr>
+      <tr><td>Reaction to a stalled path</td><td><code>T_report + 4·rttvar</code> after a report was due, never earlier than 50 ms after the send, the path turns <code>suspect</code>: no new DATA goes to it and its frames in flight are reinjected on other paths; 1–2 intervals on a steady path, later on a jittery one. <code>dead</code> follows after <code>dead_after</code> = max(1.5 s, 3·<code>rto_p</code>)</td><td class="code">§4.4, §5.10</td></tr>
       <tr><td>Incidents</td><td>an in-memory event ring with first and last incident slots; not kept across stop and apply</td><td class="code">§12.3</td></tr>
       <tr><td>Verification cost</td><td>the Level-1 frame tier runs thousands of scenarios in seconds at reduced rates; the TCP tier costs up to ≈ 20 CPU-s per run</td><td class="code">§16.2</td></tr>
       <tr><td>Bench</td><td>a Level-3 client host: a low-end arm64 machine with two or more real uplinks and scripted interface events; it covers RTC-less cold boot, interface changes, the CPU budget and energy (#13, #19, #21, #22)</td><td class="code">§16.2</td></tr>
@@ -815,7 +825,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
 
 <!-- 14 -->
 <section class="sec" id="s14">
-  <div class="sec-h"><span class="sec-n">14</span><h2>Feature tiers</h2><span class="ddr">DDR §15</span></div>
+  <div class="sec-h"><span class="sec-n">14</span><h2>What goes into MVP, v1 and Later</h2><span class="ddr">DDR §15</span></div>
   <div class="cols">
     <div><h4>MVP <small>Level 1 green before any stand</small></h4><ul>
       <li>Block RS FEC with <code>F</code>, <code>fec(2)</code>, REPAIR; thresholds from published measurements</li>
@@ -1170,7 +1180,7 @@ function anim(id,cfg){
     psn:'<b>psn24 (3 B)</b> Low 24 bits of the 64-bit per-path send counter, reconstructed at the receiver. The extended value is the AEAD nonce and the replay index. Every frame on a path consumes one PSN, control frames included; PSNs are taken at enqueue, never at write time.',
     dsn:'<b>dsn (4 B)</b> DATA: the packet’s session-wide DSN, serial arithmetic (wraps every 12 h at 100 k frames/s). REPAIR: base_dsn of its FEC group. FENCE, REPORT, CLOSE, EXT: dsn_high, the highest DSN assigned when the frame was enqueued: the zero-byte cover the release rule uses.',
     ts:'<b>ts24 (3 B)</b> Sender monotonic time in 1/16 ms (62.5 µs), wraps every 17.5 min, unwrapped against one per-session reference. Feeds one-way delay estimates, the guard deadline and echo_ts in reports. No wall clock is needed.',
-    ext:'<b>fec | desc (2 B, v1)</b> Cleartext at offset 14 and inside the AAD. On DATA with F: gidx (5 bits) and planned k. On REPAIR: actual k, r (1–8), idx. The receiver can attribute a hole to a group without decrypting members.',
+    ext:'<b>fec | desc (2 B)</b> Cleartext at offset 14 and inside the AAD. On DATA with F: gidx (5 bits) and planned k. On REPAIR: actual k, r (1–8), idx. The receiver can attribute a hole to a group without decrypting members.',
     body:'<b>body</b> Encrypted with ChaCha20-Poly1305 under the path’s key for this direction. Nonce = 4 zero bytes ‖ the 64-bit extended PSN, big-endian. DATA carries the IP packet; control frames carry their bodies (REPORT records, FENCE cover byte, CLOSE reason).',
     tag:'<b>tag (16 B)</b> Poly1305 tag over AAD = [len] ‖ the 14-byte header ‖ [fec|desc]. A failed tag is a silent drop on a datagram path and closes the connection on a TCP path. The replay bit is set only after the tag verifies.'
   };
@@ -1398,7 +1408,7 @@ function anim(id,cfg){
   E('rect',{x:30,y:90,width:100,height:200,rx:5,'class':'box2'},st);T('sender',{x:80,y:82,'text-anchor':'middle','class':'t-s t-b'},st);T('scheduler',{x:80,y:194,'text-anchor':'middle','class':'t-xs t-m'},st);
   E('rect',{x:X1,y:90,width:60,height:200,rx:5,'class':'box2'},st);T('receiver',{x:X1+30,y:82,'text-anchor':'middle','class':'t-s t-b'},st);
   ['a','b','c'].forEach(function(p){E('line',{x1:X0,x2:X1,y1:LY[p],y2:LY[p],'class':'ln s-'+p,'stroke-width':'3','stroke-opacity':'.55'},st);T('path '+p,{x:X0+4,y:LY[p]-8,'class':'t-xs f-'+p},st);E('line',{x1:130,x2:X0,y1:190,y2:LY[p],'class':'ln'},st);});
-  var sc=[T('RAID 1 · duplication',{x:250,y:44,'text-anchor':'middle','class':'scene t-s'},st),T('RAID 0 · striping',{x:420,y:44,'text-anchor':'middle','class':'scene t-s'},st),T('RAID 5 · FEC (v1)',{x:590,y:44,'text-anchor':'middle','class':'scene t-s'},st)];
+  var sc=[T('RAID 1 · duplication',{x:250,y:44,'text-anchor':'middle','class':'scene t-s'},st),T('RAID 0 · striping',{x:420,y:44,'text-anchor':'middle','class':'scene t-s'},st),T('RAID 5 · FEC',{x:590,y:44,'text-anchor':'middle','class':'scene t-s'},st)];
   T('dup budget',{x:712,y:110,'class':'t-xs t-m'},st);E('rect',{x:712,y:116,width:12,height:150,'class':'box'},st);var bud=E('rect',{x:712,y:116,width:12,height:150,'class':'f-acc'},st);T('10 %',{x:730,y:126,'class':'t-xs t-mono t-m'},st);T('of data',{x:730,y:140,'class':'t-xs t-m'},st);T('rate',{x:730,y:154,'class':'t-xs t-m'},st);
   var logs=[T('',{x:30,y:322,'class':'t-s t-mono'},L),T('',{x:30,y:342,'class':'t-xs t-mono t-m'},L),T('',{x:30,y:360,'class':'t-xs t-mono t-m'},L)];
   var items=[],xs=[],events=[];
@@ -1420,11 +1430,11 @@ function anim(id,cfg){
   events.sort(function(a,b){return a[0]-b[0];});
   var copies=[0.6,2.2];
   anim('f8',{dur:15.6,
-    steps:[{t:0,text:'At rest: one sender, three paths, one receiver. Three scenes follow: duplication of small critical packets, striping of bulk, and FEC recovery (v1).'},
+    steps:[{t:0,text:'At rest: one sender, three paths, one receiver. Three scenes follow: duplication of small critical packets, striping of bulk, and FEC recovery.'},
       {t:0.6,text:'RAID 1: a SYN is tier 1. The primary follows the scheduler’s pick (a); a copy with flag D and the same DSN goes to the next-best path b. The receiver keeps the first and drops the other as dup_received.'},
       {t:2.2,text:'A DNS query is duplicated the same way. Its primary is lost on a; the copy on b arrives and is delivered. Per-packet loss becomes π₁·π₂ instead of π₁, at the price of the shared 10 % budget.'},
       {t:5.4,text:'RAID 0: a bulk burst is larger than 200 bytes, so it is never copied. Frames spread over a, b, c by earliest predicted arrival and are released in DSN order.'},
-      {t:10.0,text:'RAID 5 (v1): four members form an FEC group (k = 4, F flag, 2-byte fec field). The REPAIR goes to b, away from a, which carries most members.'},
+      {t:10.0,text:'RAID 5: four members form an FEC group (k = 4, F flag, 2-byte fec field). The REPAIR goes to b, away from a, which carries most members.'},
       {t:10.3+0.2+TR.a*0.5,text:'Member 3 is lost on a. The receiver does not account it lost while the group’s repair may still arrive: the open-group test precedes the accounted-lost step.'},
       {t:Math.max(pr,m4),text:'With members 1, 2, 4 and the parity in hand, member 3 is rebuilt and released in order, before TCP above sees a gap.'}],
     render:function(t){

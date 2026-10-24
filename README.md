@@ -1,4 +1,4 @@
-# lx-public
+# public
 
 Published technical documents, served by GitHub Pages.
 

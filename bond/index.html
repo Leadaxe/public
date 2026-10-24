@@ -34,6 +34,10 @@ a{color:var(--accent)}
 header.top{padding-block:52px 28px;border-bottom:1px solid var(--line)}
 .eyebrow{font:500 12px/1.2 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
 h1{font:600 clamp(40px,7vw,64px)/1.02 var(--f-display);margin:.25em 0 .25em;letter-spacing:-.01em;text-wrap:balance}
+.pitch{font:600 21px/1.35 var(--f-display);max-width:62ch;margin:8px 0 16px;text-wrap:pretty}
+.pitch-sec .tbl td:first-child{font-weight:600}
+.pitch-sec h3{margin-top:26px}
+.field{font:600 15px/1.4 var(--f-display);color:var(--accent);margin-top:18px}
 .lede{max-width:70ch;color:var(--muted);font-size:17px;margin:0}
 .meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:18px;font:12.5px var(--f-mono);color:var(--muted)}
 nav.toc{margin-top:26px}
@@ -164,6 +168,7 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
 <header class="top">
   <div class="eyebrow">Design overview</div>
   <h1>LX Bond</h1>
+  <p class="pitch">LX Bond is a connection that neither drops nor gets blocked: every available channel (several SIM cards, fibre, Starlink) adds up to one, and from the outside the traffic looks like ordinary HTTPS.</p>
   <p class="lede">A walkthrough of the multipath bonding protocol as the Design Decision Record settles it: what crosses the wire, how the sender picks a path, how the receiver tells a lost packet from a late one, and what happens when a channel drops. Every animated figure starts as a complete static drawing; Play steps through it. The approved decisions are collected in section 13.</p>
   <div class="meta"><span>Source: SPECS/DESIGN/DDR.md, BRIEF.md</span><span>Protocol: <code>bond</code> endpoint + inbound</span><span><a href="ru.html" hreflang="ru" lang="ru">Русская версия</a></span></div>
   <nav class="toc" aria-label="Sections">
@@ -185,6 +190,32 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
     </ol>
   </nav>
 </header>
+
+<!-- 0 -->
+<section class="sec pitch-sec" id="s0">
+  <div class="sec-h"><h2>The problem and the market</h2></div>
+  <h3>Competitors: why what exists does not meet the need</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Class</th><th>Examples</th><th>What is missing</th></tr></thead>
+    <tbody>
+      <tr><td>Open source</td><td>OpenMPTCProuter, MQVPN, MPTCP</td><td>Needs an engineer to set up. UDP and calls work poorly or not at all. The tunnel is easy to recognise.</td></tr>
+      <tr><td>Commercial aggregation</td><td>Peplink SpeedFusion, Speedify</td><td>Own protocols that DPI recognises. Not built for filtered networks. Not available in every market.</td></tr>
+      <tr><td>Broadcast aggregation</td><td>LiveU, TVU</td><td>Expensive dedicated hardware, a narrow niche, not available in Russia.</td></tr>
+      <tr><td>VPN</td><td>any</td><td>Runs over one channel and adds nothing up.</td></tr>
+    </tbody></table></div>
+  <h3>Goals</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Promise to the customer</th><th>What backs it</th></tr></thead>
+    <tbody>
+      <tr><td>A call does not drop when a channel goes away</td><td>Critical packets (voice, DNS, connection set-up) are duplicated within a 10 % budget</td></tr>
+      <tr><td>One download or stream gets the sum of the channels</td><td>Packet-level aggregation, a scheduler by predicted arrival time (ECF + BLEST)</td></tr>
+      <tr><td>Never worse than the best single channel</td><td>A guaranteed lower bound, built into the design (BRIEF 9)</td></tr>
+      <tr><td>Works where VPNs are cut</td><td>Every path rides inside a camouflaging transport (REALITY, XHTTP, QUIC); different channels can use different protocols</td></tr>
+      <tr><td>No stutter on poor LTE</td><td>Adaptive FEC from a bursty-loss model; a cap on data in flight so buffers do not bloat</td></tr>
+      <tr><td>Transparent operation</td><td>Metrics, an event log, incident capture (DDR §12)</td></tr>
+    </tbody></table></div>
+  <p class="field">Built for hard field conditions with restrictions and DPI.</p>
+</section>
 
 <!-- 1 -->
 <section class="sec" id="s1">
@@ -360,10 +391,10 @@ pre .k{color:var(--accent)} pre .c{color:var(--muted);font-style:italic} pre .s{
   <div class="sec-h"><span class="sec-n">5</span><h2>Scheduler: earliest delivery</h2><span class="ddr">DDR §5.3–5.7</span></div>
   <p>The sender does not round-robin. For each frame at the head of the ingress FIFO it predicts, per path, when the frame would arrive, and sends it where it lands first:</p>
   <pre>A(p, s) = owd_min_p + q_model_p + q_exo_p + s/btl_p</pre>
-  <p><code>q_model</code> is the queue our own sends built (it reacts instantly); <code>q_exo</code> is the smoothed queue we did not cause (radio scheduler, proxy, HOL). When the fastest path <code>f</code> is cap-blocked, a slower path <code>g</code> is used if it still delivers first counting the backlog <code>B</code> waiting behind the head (ECF with the backlog term, Lim et al. 2017), or if <code>f</code> has been saturated for one <code>srtt_f</code> and <code>g</code>'s lateness fits the BLEST budget (Ferlin et al. 2016). The budget starts at <code>κ·reorder.max_latency</code> = 0.8 × 200 ms and adapts once per feedback delay.</p>
+  <p><code>q_model</code> is the queue our own sends built (it reacts instantly); <code>q_exo</code> is the smoothed queue we did not cause (radio scheduler, proxy, HOL). When the fastest path <code>f</code> is cap-blocked, a slower path <code>g</code> is used if it still delivers first counting the backlog <code>B</code> waiting behind the head (ECF with the backlog term, Lim et al. 2017), or if <code>f</code> has been saturated for one <code>srtt_f</code> and <code>g</code>'s lateness fits the BLEST budget (Ferlin et al. 2016). The budget is per path: it starts at <code>max_latency − 4·dev_g − 2 ms</code> (between 0.25 and 0.9 of <code>max_latency</code>) and adapts once per feedback delay. After a hold, a slower path needs a 25 % margin before it is taken again.</p>
   <pre>BDP_p  = btl_p · ack_min_p
 cap_p  = max(BDP_p, clamp(1.25·BDP_p + btl_p·T_report, 4·max_frame, cap_ceiling_p))</pre>
-  <p>The inflight cap is BBR's <code>cwnd_gain·BDP</code> plus the bytes acknowledged but not yet reported within one interval. The 1.25 gain is a default because LTE acknowledgement batching and DRX delay feedback <span class="verify">to verify on the stand: R-1</span>. Cold start seeds <code>btl</code> at 1 Mbit/s and grows per <code>srtt</code> round with BBR's STARTUP gain 2/ln 2 ≈ 2.89, for at most 2 s.</p>
+  <p>The inflight cap is BBR's <code>cwnd_gain·BDP</code> plus the bytes acknowledged but not yet reported within one interval. The 1.25 gain is a default because LTE acknowledgement batching and DRX delay feedback <span class="verify">to verify on the stand: R-1</span>. Cold start seeds <code>btl</code> at 1 Mbit/s and grows per <code>srtt</code> round with BBR's STARTUP pacing gain 2/ln 2 ≈ 2.89 and a cap gain of 2.0, for at most 2 s; the cap also absorbs measured ACK aggregation.</p>
   <figure class="anim" id="f5">
     <div class="svgwrap"><svg viewBox="0 0 820 400" role="img" aria-label="Three paths drawn as pipes whose length is the one-way delay and whose thickness is the bottleneck rate. Frames leave the ingress FIFO for the path with the earliest predicted arrival; path A fills to its cap and B and C take the overflow.">
       <g class="st"></g><g class="dyn"></g>
@@ -380,10 +411,10 @@ cap_p  = max(BDP_p, clamp(1.25·BDP_p + btl_p·T_report, 4·max_frame, cap_ceili
   <div class="sec-h"><span class="sec-n">6</span><h2>Receiver: lost or late</h2><span class="ddr">DDR §6.1–6.4</span></div>
   <p>Every frame carries two numbers: the session-wide DSN (release order) and its path's PSN (per-path loss accounting), as MPTCP's DSN/SSN. The receiver releases strictly by DSN from its cursor <code>R</code>. A path <em>covers</em> <code>R</code> once it has delivered a frame enqueued after <code>R</code> with no undecided hole below it; because every frame is stamped inside one critical section, DSN (or the <code>dsn_high</code> cover of a control frame) increases with PSN on every path.</p>
   <pre>hole h on p is lost on p   when  now − t_after(h) ≥ reo_wnd_p            (RACK time threshold)
-reo_wnd_p  = clamp(max(4·dev_p, reo_learned_p), 2 ms, reo_max_p)        reo_max 20 → 60 ms
+reo_wnd_p  = clamp(max(4·dev_p, reo_learned_p), 2 ms, reo_max_p)        reo_max 20 → 60 ms, ≤ max(20 ms, srtt_p)
 pending(R) = { p live ∧ covering : R > cleared(p) }
 pending(R) = ∅  →  R is lost, not late: skip it now, no timer             (accounted_lost)
-guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p + 2 ms, 5 ms)),  ceiling 200 ms</pre>
+guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p + 2 ms, 10 ms)),  ceiling 200 ms</pre>
   <p>The guard is clocked from the frames' own sender timestamps and the pending paths' <em>current</em> one-way delay, with a silence term so a path in a handover holds the release up to the 200 ms ceiling instead of releasing frames that are still in flight. A frame that arrives after its DSN was released is delivered anyway (TCP above handles reordering better than a drop) and counted as <code>late_after_release</code> on its path.</p>
   <figure class="anim" id="f6">
     <div class="svgwrap"><svg viewBox="0 0 820 400" role="img" aria-label="Timing diagram to scale: fourteen frames sent on three paths with one-way delays of 20, 35 and 50 ms arrive out of order; the reorder buffer below releases them in DSN order; DSN 5 is lost on path B and skipped as soon as every covering path has delivered beyond it; DSN 10 arrives 8 ms late on path C and is waited for.">
@@ -444,7 +475,7 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
 <!-- 9 -->
 <section class="sec" id="s9">
   <div class="sec-h"><span class="sec-n">9</span><h2>Path life</h2><span class="ddr">DDR §4.1–4.7</span></div>
-  <p>The sender judges its paths from the receiver's records. A path is <code>suspect</code> when frames above <code>psn_high</code> are outstanding and the oldest has waited longer than <code>rto_p = srtt_p + 4·rttvar_p + T_report</code> (floor <code>rto_min</code> 50 ms, no ceiling); the clock restarts on every record that advances <code>psn_high</code>, so a single lost frame never makes a delivering path suspect. Suspect for <code>dead_after</code> = 1.5 s (an LTE handover and a 1.28 s DRX paging cycle, not an uplink reboot) means <code>dead</code>. Demotion to <code>backup</code> uses factor 2 against the median of the other active paths; promotion needs factor 1.5 held for <code>promote_after</code> = 10 s. A returning path re-enters as backup for <code>return_hold</code>, 10 s doubling per death within 10 min up to 60 s.</p>
+  <p>The sender judges its paths from the receiver's records. A path is <code>suspect</code> when frames above <code>psn_high</code> are outstanding and the oldest has waited longer than <code>rto_p = srtt_p + 4·rttvar_p + T_report</code> (floor <code>rto_min</code> 50 ms, no ceiling); the clock restarts on every record that advances <code>psn_high</code>, so a single lost frame never makes a delivering path suspect. Suspect for <code>dead_after</code> = max(1.5 s, 3·<code>rto_p</code>) means <code>dead</code>: three probe periods, well above the ≤ 0.4 s of an LTE/5G handover; after silence <code>rto_p</code> gains a radio-wake allowance (400 ms after a short pause, 0.75–2 s after idle), so a waking radio is not taken for a stall. Demotion to <code>backup</code> uses factor 2 against the median of the other active paths; promotion needs factor 1.5 held for <code>promote_after</code> = 10 s. A returning path re-enters as backup for <code>return_hold</code>: 10 s, doubling up to 60 s only for deaths with an outage over 5 s or a failed first re-dial, halving after each quiet 10 min.</p>
   <figure class="anim" id="f9">
     <div class="svgwrap"><svg viewBox="0 0 820 420" role="img" aria-label="Path state machine above a time line to scale in seconds: path B goes from active to suspect to dead during an LTE handover, re-dials after backoff, probes, returns as backup and is promoted to active after ten seconds; the data share of paths A, B and C is drawn below.">
       <g class="st"></g><g class="dyn"></g>
@@ -453,13 +484,13 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
     <div class="ctl"><button data-act="play">Play</button><button data-act="reset">Reset</button><input type="range" aria-label="Animation timeline"><span class="clock"></span></div>
     <figcaption><span class="stepn"></span><span class="step"></span></figcaption>
   </figure>
-  <p>Handshake timing: INIT at t0, retransmitted at +1 s and +3 s with fresh ephemerals, <code>handshake_timeout</code> at +7 s. A dead path re-dials on its own backoff 1, 2, 4 … 30 s ±20 %. With no path established the session runs handshake cycles on every path at once and backs off 5 → 60 s between them. Keepalive is one <code>FENCE K</code> per live datagram path every 25 s (below common CGNAT UDP timeouts); it is the only timer that runs while idle.</p>
+  <p>Handshake timing: INIT at t0, retransmitted at +1 s and +3 s with fresh ephemerals, <code>handshake_timeout</code> at +7 s. A dead path re-dials on its own backoff 1, 2, 4 … 30 s ±20 %. With no path established the session runs handshake cycles on every path at once and backs off 5 → 60 s between them, each wait drawn in 50–100 % of its step. Keepalive is one <code>FENCE K</code> per live datagram path every 20–25 s (below most NAT UDP timeouts), 15 s on a path whose binding was lost after idle; it is the only timer that runs while idle.</p>
   <h3>DC failover, to scale</h3>
   <figure>
     <div class="svgwrap"><svg viewBox="0 0 820 170" role="img" aria-label="Failover bound to scale: 2 s detection, two handshake cycles of 7 s or 10 s, 6 s session backoff and 1 s join, about 23 s with connectionless paths and about 29 s when some path's dial reaches the node.">
       <g class="fo"></g>
     </svg></div>
-    <figcaption><code>T_failover ≤ T_det + after_cycles·C + backoff + T_join</code> with <code>failover.after_cycles</code> = 2. Return to the primary happens only when the standby fails, or on the first wake from idle after at least 60 s on the standby; never under load, because a node switch changes the exit address and kills every flow.</figcaption>
+    <figcaption><code>T_failover ≤ T_det + after_cycles·C + backoff + T_join</code> with <code>failover.after_cycles</code> = 2. During the first failed cycle the client also probes the standby: if it answers and the primary does not, the switch comes after one cycle (≈ 10 s); if neither answers, the outage is on the client side and it does not switch. Return to the primary happens only when the standby fails, or on the first wake from idle after at least 60 s on the standby; never under load, because a node switch changes the exit address and kills every flow.</figcaption>
   </figure>
 </section>
 
@@ -726,13 +757,13 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
       <tr><td class="code">4.5</td><td>The DSN field carries <code>dsn_high</code> on every non-DATA frame: the zero-byte cover the release rule needs.</td><td class="code">§2.2</td></tr>
       <tr><td class="code">4.6</td><td>Versioning: <code>ver</code> in the handshake bound into the prologue; an unknown <code>ver</code> gets VERSION_NAK; 7 type codes (handshake by subtype, PATH_ACK a REPORT flag, errors as CLOSE reasons), 8 free; new layouts take new codes or a new <code>ver</code>.</td><td class="code">§2.1, §2.5</td></tr>
       <tr><td class="code">5.1</td><td>Predicted arrival with the queue split into our own (instant) and exogenous (smoothed) parts.</td><td class="code">§5.3</td></tr>
-      <tr><td class="code">5.2</td><td>ECF with the backlog term plus the <code>saturated_f</code> clause; BLEST budget derived from <code>reorder.max_latency</code> (κ = 0.8, floor 0.25·max_latency), one knob.</td><td class="code">§5.5</td></tr>
+      <tr><td class="code">5.2</td><td>ECF with the backlog term plus the <code>saturated_f</code> clause; BLEST budget per path derived from <code>reorder.max_latency</code> (<code>max_latency − 4·dev − 2 ms</code>, 0.25–0.9 of it), one knob; ECF hysteresis β = 0.25.</td><td class="code">§5.5</td></tr>
       <tr><td class="code">5.3</td><td>Inflight cap <code>1.25·BDP + btl·T_report</code> with <code>BDP = btl·ack_min</code>, exposed as <code>inflight_gain_percent</code> 100–200; ProbeRTT and a reduced ProbeBW.</td><td class="code">§5.6, §5.8</td></tr>
-      <tr><td class="code">5.4</td><td>Cold start per <code>srtt</code> round with STARTUP gain 2.89, 1 Mbit/s seed, exit on three rounds below 25 % growth, a queue or loss, at most 2 s.</td><td class="code">§5.7</td></tr>
+      <tr><td class="code">5.4</td><td>Cold start per <code>srtt</code> round with STARTUP pacing gain 2.89 and cap gain 2.0, 1 Mbit/s seed, exit on three rounds below 25 % growth, a queue, or loss ≥ 2 % with ≥ 6 losses, at most 2 s.</td><td class="code">§5.7</td></tr>
       <tr><td class="code">5.5</td><td>Atomic scheduling step: DSN, path, PSN and <code>ts</code> assigned in one critical section per session, so <code>ts</code> is non-decreasing in DSN across paths.</td><td class="code">§5.4</td></tr>
       <tr><td class="code">6.1</td><td>Cover/open-hole release rule over the cover set: timer-free whenever every covering path carries anything; backup and idle paths are cover-exempt.</td><td class="code">§6.2, §5.8</td></tr>
-      <tr><td class="code">6.2</td><td>RACK-style <code>reo_wnd</code> per path with a learned floor from spurious losses: <code>clamp(max(4·dev, reo_learned), 2 ms, reo_max)</code>, <code>reo_max</code> 20 → 60 ms.</td><td class="code">§6.2</td></tr>
-      <tr><td class="code">6.3</td><td>Guard on the pending paths' current OWD plus <code>max(4·dev + 2 ms, 5 ms)</code>, silence-aware, ceiling <code>max_latency</code> 200 ms; reinjection fills a stalled path's holes.</td><td class="code">§6.3</td></tr>
+      <tr><td class="code">6.2</td><td>RACK-style <code>reo_wnd</code> per path with a learned floor from spurious losses: <code>clamp(max(4·dev, reo_learned), 2 ms, reo_max)</code>, <code>reo_max</code> 20 → 60 ms, never above max(20 ms, <code>srtt</code>).</td><td class="code">§6.2</td></tr>
+      <tr><td class="code">6.3</td><td>Guard on the pending paths' current OWD plus <code>max(4·dev + 2 ms, 10 ms)</code>, silence-aware, ceiling <code>max_latency</code> 200 ms; reinjection fills a stalled path's holes.</td><td class="code">§6.3</td></tr>
       <tr><td class="code">6.4</td><td>Delay deviation uses the RFC 3550 estimator form applied to the deviation from the smoothed delay (like <code>rttvar</code>), not to consecutive differences.</td><td class="code">§6.4</td></tr>
       <tr><td class="code">6.5</td><td>Late frames delivered anyway; duplicates dropped within <code>W_seen</code> = 2^18 DSNs; frames 2^20 ahead dropped.</td><td class="code">§6.2</td></tr>
       <tr><td class="code">6.6</td><td>No per-path "highest DSN sent" field anywhere: the <code>dsn_high</code> overload does that job at zero bytes.</td><td class="code">§6.2</td></tr>
@@ -747,11 +778,11 @@ guard: deadline(R) = S_min(R) + max_{p ∈ pending(R)} (owd_eff_p + max(4·dev_p
       <tr><td class="code">8.4</td><td>Gilbert–Elliott rate law with repair losses on the member chain and an exact per-path residual; on at 0.2 % (with ≥ 8 loss runs), off below 0.05 % for 10 s; an explicit infeasible branch.</td><td class="code">§8.5</td></tr>
       <tr><td class="code">8.5</td><td>Fallback = best path by expected goodput + duplicated critical traffic, FEC off; exit decided by a re-probe, not by the trigger clearing.</td><td class="code">§5.9</td></tr>
       <tr><td class="code">8.6</td><td>MVP: duplication tiers 1–2, loss-based demotion, stall reinjection and FEC; v1: tier 3 and the rules for RTP-like traffic and retransmissions.</td><td class="code">§15</td></tr>
-      <tr><td class="code">9.1</td><td>RTO-style suspect (<code>srtt + 4·rttvar + T_report</code>, floor 50 ms, no ceiling) restarted on progress; <code>dead_after</code> 1.5 s.</td><td class="code">§4.4</td></tr>
-      <tr><td class="code">9.2</td><td>×2 demotion / ×1.5 promotion with <code>promote_after</code> 10 s; absolute demotion at loss &gt; 20 % or <code>q_exo</code> &gt; 200 ms; flap damping by <code>return_hold</code> 10 → 60 s.</td><td class="code">§4.4</td></tr>
+      <tr><td class="code">9.1</td><td>RTO-style suspect (<code>srtt + 4·rttvar + T_report</code>, floor 50 ms, no ceiling) restarted on progress, plus a radio-wake allowance after silence; <code>dead_after</code> = max(1.5 s, 3·<code>rto_p</code>).</td><td class="code">§4.4</td></tr>
+      <tr><td class="code">9.2</td><td>×2 demotion / ×1.5 promotion with <code>promote_after</code> 10 s; absolute demotion at loss &gt; 20 % or <code>q_exo</code> &gt; 200 ms; flap damping by <code>return_hold</code> 10 → 60 s, counting only deaths with an outage over 5 s.</td><td class="code">§4.4</td></tr>
       <tr><td class="code">9.3</td><td>INIT ladder 0 / +1 / +3 s, <code>T_hs</code> 7 s, <code>connect_timeout</code> 10 s; path backoff 1…30 s ±20 %, session cycles 5…60 s.</td><td class="code">§4.3</td></tr>
-      <tr><td class="code">9.4</td><td>Keepalive 25 s; no data-path timers while idle.</td><td class="code">§4.5</td></tr>
-      <tr><td class="code">9.5</td><td><code>failover.after_cycles</code> = 2 cycles (≈ 23 s / ≈ 29 s), not 3; return to the primary only through a probe on wake from idle after <code>failover.return_probe_after</code> 60 s.</td><td class="code">§4.7</td></tr>
+      <tr><td class="code">9.4</td><td>Keepalive every 20–25 s (15 s on a path whose binding was lost after idle); no data-path timers while idle.</td><td class="code">§4.5</td></tr>
+      <tr><td class="code">9.5</td><td><code>failover.after_cycles</code> = 2 cycles (≈ 23 s / ≈ 29 s), or one cycle (≈ 10 s) when the standby answers a probe and the primary does not; no switch when neither answers; return to the primary only through a probe on wake from idle after <code>failover.return_probe_after</code> 60 s.</td><td class="code">§4.7</td></tr>
       <tr><td class="code">9.6</td><td><code>InterfaceUpdated</code> is a hint only: the first re-dial within 1 s after it skips backoff; working paths are not touched.</td><td class="code">§4.8</td></tr>
       <tr><td class="code">10.1</td><td>Three unary RPCs: <code>GetBondStatus</code>, <code>GetBondInboundStatus</code> (filtered, paged), separate <code>GetBondDebugDump</code>; no REST route, no stream.</td><td class="code">§12.4</td></tr>
       <tr><td class="code">10.2</td><td>Raw-fact metrics; every release/drop reason a counter; §12.1 as the single schema; closed event vocabulary.</td><td class="code">§12.1–12.2</td></tr>

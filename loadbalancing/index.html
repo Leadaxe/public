@@ -49,6 +49,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
 img{max-width:100%}
 .doc{max-width:980px;margin:0 auto;display:grid;gap:40px}
+/* minmax(0,1fr): wide tables and diagrams scroll inside their own boxes instead of widening the page on phones */
+.doc,.stack,.figure{grid-template-columns:minmax(0,1fr)}
 .col{max-width:760px}
 h1,h2,h3{text-wrap:balance;margin:0}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1.15;letter-spacing:-.01em}
@@ -277,6 +279,33 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
 .fm-tip{position:absolute;top:8px;pointer-events:none;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.45;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap;color:var(--ink)}
 .fm-tip b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
 @media (max-width:520px){.fm-step{padding:14px}.fm-hero{padding:16px 16px 18px}.fm-fact{padding:14px 16px}}
+
+/* floating section navigation: a button pinned top-right opens the list of sections */
+.toc-btn{position:fixed;z-index:20;top:max(12px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));
+  display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--line);border-radius:20px;
+  background:var(--paper);color:var(--ink);font:600 14px/1 var(--body);cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.10)}
+.toc-btn:hover{border-color:var(--accent);color:var(--accent)}
+.toc-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toc-btn svg{width:16px;height:16px;flex:none}
+.toc-btn svg path{stroke:currentColor;stroke-width:2;stroke-linecap:round;fill:none}
+.toc-panel{position:fixed;z-index:20;top:calc(max(12px,env(safe-area-inset-top,0px)) + 48px);right:max(12px,env(safe-area-inset-right,0px));
+  width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 84px);overflow-y:auto;overscroll-behavior:contain;
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.16);padding:8px}
+.toc-panel[hidden]{display:none}
+.toc-panel ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc-panel a{display:flex;gap:10px;align-items:baseline;padding:8px 10px;border-radius:6px;color:var(--ink);text-decoration:none;font-size:15px;line-height:1.35}
+.toc-panel a .n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--muted);min-width:2ch}
+.toc-panel a:hover{background:var(--bg)}
+.toc-panel a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.toc-panel a[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.toc-panel a[aria-current="true"] .n{color:var(--accent)}
+section[id]{scroll-margin-top:68px}
+@media (max-width:640px){
+  .toc-btn{width:40px;padding:0;justify-content:center}
+  .toc-btn .t{display:none}
+  .head{padding-right:48px}
+}
+@media print{.toc-btn,.toc-panel{display:none}}
 </style>
 </head>
 <body>
@@ -293,7 +322,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   </div>
 </header>
 
-<section class="stack">
+<section class="stack" id="team">
   <h2>О команде</h2>
   <ul class="col">
     <li>В команде сетевые инженеры, программисты, архитекторы и авторы сетевых протоколов с опытом разработки и эксплуатации промышленных систем.</li>
@@ -315,19 +344,19 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   <p class="cap col">Данные GitHub на 25.10.2026. Скачивания посчитаны по последним 100 релизам каждого проекта.</p>
 </section>
 
-<section class="stack">
+<section class="stack" id="s00">
   <h2><span class="n">00</span>Коротко</h2>
   <p class="col">Предлагаем программно-аппаратный комплекс на серийных компонентах. Это промышленный подход: запуск проекта получается предсказуемым и управляемым. Клиент работает на OpenWrt, три сотовых канала идут через промышленные PoE-модемы, а собственный движок маршрутизации трафика распределяет соединения по каналам до ЦОД. Узлов агрегации два, в разных ЦОД: основной и резервный. Опираясь на наш опыт, мы уверенно доведём проект до серийного выпуска примерно за 8–10 месяцев. Пакетная агрегация — возможный следующий шаг развития при коммерческом успехе проекта.</p>
 </section>
 
-<section class="stack">
+<section class="stack" id="s01">
   <h2><span class="n">01</span>Как мы поняли задачу</h2>
   <div class="col stack">
     <p>Клиентское устройство на объекте работает как Wi-Fi-роутер. Весь трафик объекта идёт через ЦОД: основной канал до узла агрегации — Ethernet провайдера, три сотовых канала держатся в резерве. Так любой канал, включая основной, остаётся управляемым, а внешние сайты всегда видят один адрес — адрес узла агрегации. В режиме агрегации устройство использует все рабочие сотовые каналы одновременно. Главное требование к продукту — надёжность: отказ модема, SIM-карты, оператора или сервера не должен оставлять объект без связи.</p>
   </div>
 </section>
 
-<section class="stack">
+<section class="stack" id="s02">
   <h2><span class="n">02</span>Архитектура</h2>
   <p class="col">Первая версия распределяет по каналам соединения. Каждое новое соединение получает живой канал по взвешенному кругу (weighted round-robin): быстрые каналы получают соединения чаще, медленные реже. Закрепления соединений за каналами нет. Узел пакеты не склеивает: он принимает соединения из всех каналов и открывает их в интернет со своего адреса. Такая схема проста, предсказуема и дёшево масштабируется на стороне сервера. Пакетная агрегация, при которой складывается скорость и внутри одного соединения, — следующий шаг развития по результатам первых внедрений.</p>
   <div class="figure">
@@ -508,7 +537,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   </div>
 </section>
 
-<section class="stack">
+<section class="stack" id="s03">
   <h2><span class="n">03</span>Движок маршрутизации трафика</h2>
   <figure class="sim" id="sim">
     <div class="sim-tabs" role="tablist" aria-label="Сценарии: один «Пуск» проигрывает их по очереди, вкладка переходит к сценарию">
@@ -621,7 +650,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   </div>
 </section>
 
-<section class="stack">
+<section class="stack" id="s04">
   <h2><span class="n">04</span>Клиентский комплект: стоимость</h2>
   <div class="tbl">
     <table>
@@ -651,7 +680,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   </div>
 </section>
 
-<section class="stack">
+<section class="stack" id="s05">
   <h2><span class="n">05</span>Серверная часть</h2>
   <div class="col stack">
     <p>Сервер стоит в ЦОД на проводных каналах. Две площадки, в каждой один узел агрегации с подключением 2×10G и своим выходным адресом. Половина клиентов работает через ЦОД 1, половина через ЦОД 2, второй ЦОД у каждого клиента резервный. Резервирование идёт только между ЦОД: при отказе узла или площадки её клиенты переходят на второй узел, открытые соединения при этом рвутся, а выходной адрес меняется. Управление и мониторинг работают на обоих узлах.</p>
@@ -692,7 +721,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   <p class="cap col">Рост: следующая пара узлов, по одному в каждом ЦОД, добавляется на каждые 100 объектов, вместе с ней — размещение и подключение по таблице выше. Цены серверного оборудования ориентировочные и фиксируются коммерческим предложением поставщика.</p>
 </section>
 
-<section class="stack">
+<section class="stack" id="s06">
   <h2><span class="n">06</span>Надёжность</h2>
   <div class="tbl">
     <table>
@@ -710,7 +739,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   </div>
 </section>
 
-<section class="stack">
+<section class="stack" id="s07">
   <h2><span class="n">07</span>Этапы и сроки</h2>
   <div class="stages col">
     <div class="stage phase"><span class="when">≈ 8 мес.</span><div class="what"><h3>Этап I. Инженерный путь</h3><p class="muted">Методология настройки и демонстрация работы ядра системы на объектах заказчика. Комплекты настраиваются конфигурацией вручную, по документированной методике.</p></div></div>
@@ -924,7 +953,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   <p class="cap col">Модель без налога на прибыль и без стоимости денег во времени; суммы с НДС, как введены. Каждый объект считается отдельным клиентом. Продажи растут по кварталам и равномерно распределены по месяцам квартала; отток списывается ежемесячно. Плановые продажи умножаются на долю ещё свободного рынка, поэтому они затухают по мере насыщения, и база асимптотически приближается к ёмкости рынка. После заданного числа проданных объектов операционные расходы составляют не меньше заданной доли выручки. Тарифы продаются в заданных долях; цены и расходы модели — средние по этим долям. Серверы ставятся парами (по одному в каждом ЦОД) с началом продаж и докупаются при росте. Персонал заказчика в расходы не входит. Разработка берётся с резервом и оплачивается по условиям раздела 07: этап I — 60 % в 1-м месяце и 40 % в 8-м, этап II — 60 % в 6-м месяце и 40 % в 9-м. Этап III в модель не входит.</p>
 </section>
 
-<section class="stack">
+<section class="stack" id="s09">
   <h2><span class="n">09</span>Риски и как мы их снимаем</h2>
   <div class="tbl">
     <table>
@@ -943,7 +972,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   </div>
 </section>
 
-<section class="stack">
+<section class="stack" id="s10">
   <h2><span class="n">10</span>Комментарии к проекту</h2>
   <div class="col stack">
     <p><b>Скорость объекта.</b> Соединения объекта распределяются по всем каналам сразу, поэтому общая скорость объекта — сумма скоростей каналов: пользователи, браузеры и приложения одновременно открывают десятки соединений. Отдельное соединение, например скачивание одного файла в один поток, идёт со скоростью своего канала.</p>
@@ -963,7 +992,7 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
   </div>
 </section>
 
-<section class="stack">
+<section class="stack" id="s11">
   <h2><span class="n">11</span>Вопросы к заказчику</h2>
   <ul class="col">
     <li><b>Тип объектов.</b> Только стационарные объекты или ещё и транспорт? От этого зависит монтаж модемов.</li>
@@ -1477,6 +1506,40 @@ form.addEventListener('change',function(e){var el=e.target;if(el.type!=='number'
   if(!isFinite(x))return;if(isFinite(lo)&&x<lo)el.value=lo;else if(isFinite(hi)&&x>hi)el.value=hi;else return;render();});
 form.addEventListener('submit',function(e){e.preventDefault();});
 render();
+})();
+</script>
+<script>
+/* Floating section navigation: built from the h2 of every section with an id; the current section is highlighted. */
+(function(){
+'use strict';
+var secs=[].filter.call(document.querySelectorAll('section[id]'),function(s){return s.querySelector('h2');});
+if(!secs.length)return;
+var btn=document.createElement('button'),panel=document.createElement('nav'),ol=document.createElement('ol'),links=[];
+btn.type='button';btn.className='toc-btn';btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-controls','toc-panel');btn.setAttribute('aria-label','Разделы');
+btn.innerHTML='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg><span class="t">Разделы</span>';
+panel.className='toc-panel';panel.id='toc-panel';panel.hidden=true;panel.setAttribute('aria-label','Разделы КП');
+secs.forEach(function(sec){
+  var h=sec.querySelector('h2'),n=h.querySelector('.n'),li=document.createElement('li'),a=document.createElement('a');
+  a.href='#'+sec.id;
+  var ns=document.createElement('span');ns.className='n';ns.textContent=n?n.textContent:'';
+  var t=document.createElement('span');t.textContent=(n?h.textContent.slice(n.textContent.length):h.textContent).trim();
+  a.appendChild(ns);a.appendChild(t);li.appendChild(a);ol.appendChild(li);links.push(a);
+  a.addEventListener('click',function(){close(false);});
+});
+panel.appendChild(ol);document.body.appendChild(btn);document.body.appendChild(panel);
+function open(){panel.hidden=false;btn.setAttribute('aria-expanded','true');var c=panel.querySelector('[aria-current="true"]')||links[0];c.focus();}
+function close(refocus){if(panel.hidden)return;panel.hidden=true;btn.setAttribute('aria-expanded','false');if(refocus)btn.focus();}
+btn.addEventListener('click',function(){panel.hidden?open():close(false);});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close(true);});
+document.addEventListener('click',function(e){if(!panel.hidden&&!panel.contains(e.target)&&!btn.contains(e.target))close(false);});
+/* the current section is the last one whose top has passed a third of the viewport */
+var cur=-1,tick=false;
+function mark(){tick=false;var y=window.innerHeight/3,i=0;
+  secs.forEach(function(sec,k){if(sec.getBoundingClientRect().top<=y)i=k;});
+  if(i===cur)return;if(cur>=0)links[cur].removeAttribute('aria-current');links[i].setAttribute('aria-current','true');cur=i;}
+window.addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(mark);}},{passive:true});
+window.addEventListener('resize',mark);
+mark();
 })();
 </script>
 </body>

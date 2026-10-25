@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="googlebot" content="noindex, nofollow">
+<title>КП: агрегация сотовых каналов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column (~760px) with wide bands for the diagram and the tables; document-style КП, numbered sections because the order is the argument. */
+:root{
+  --bg:#f5f7f8;
+  --paper:#ffffff;
+  --ink:#13212b;
+  --muted:#5b6b76;
+  --line:#d9e1e6;
+  --accent:#0b7a83;
+  --accent-soft:#e1f1f2;
+  --signal:#c26a12;
+  --signal-soft:#fbefe1;
+  --good:#2f7d4f;
+  --bad:#c42f28;
+  --pa:#2460c4;
+  --pb:#bb600c;
+  --pc:#93368a;
+  --fill:#fff6c9;
+  --display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono","Golos Text",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1419;--paper:#141e25;--ink:#e2e9ee;--muted:#93a4af;--line:#26343e;
+    --accent:#45bcc4;--accent-soft:#16343a;--signal:#e59a4b;--signal-soft:#3a2a18;--good:#5fbf86;--fill:#4a4214;--bad:#ff6e62;--pa:#6ea4ff;--pb:#f0a24e;--pc:#d983cd;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1419;--paper:#141e25;--ink:#e2e9ee;--muted:#93a4af;--line:#26343e;
+  --accent:#45bcc4;--accent-soft:#16343a;--signal:#e59a4b;--signal-soft:#3a2a18;--good:#5fbf86;--fill:#4a4214;--bad:#ff6e62;--pa:#6ea4ff;--pb:#f0a24e;--pc:#d983cd;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+img{max-width:100%}
+.doc{max-width:980px;margin:0 auto;display:grid;gap:40px}
+.col{max-width:760px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,4.4vw,40px);line-height:1.15;letter-spacing:-.01em}
+h2{font-family:var(--display);font-weight:500;font-size:clamp(20px,2.8vw,26px);line-height:1.25;display:flex;gap:14px;align-items:baseline}
+h2 .n{font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:600;min-width:2ch}
+h3{font-size:17px;font-weight:600}
+p{margin:0}
+.stack{display:grid;gap:14px}
+.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.fill{background:var(--fill);padding:0 4px;border-radius:3px}
+a{color:var(--accent)}
+ul{margin:0;padding-left:20px;display:grid;gap:6px}
+
+/* header */
+.head{display:grid;gap:22px;padding-bottom:28px;border-bottom:2px solid var(--ink)}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 28px}
+.meta div{display:grid;gap:2px}
+.meta b{font-weight:600}
+
+/* key figures */
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.fig{background:var(--paper);padding:18px 18px 16px;display:grid;gap:4px;align-content:start}
+.fig .v{font-family:var(--mono);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent)}
+.fig .k{font-size:14px;color:var(--muted);line-height:1.4}
+
+/* callouts */
+.note{background:var(--accent-soft);padding:14px 16px;border-radius:6px}
+.warn{background:var(--signal-soft);padding:14px 16px;border-radius:6px}
+
+/* diagram */
+.figure{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:10px}
+.scroll{overflow-x:auto}
+.figure svg{display:block;width:100%;min-width:760px;height:auto}
+.cap{font-size:14px;color:var(--muted)}
+svg text{font-family:var(--body);fill:var(--ink)}
+svg .t-s{font-size:12px;fill:var(--muted)}
+svg .t-m{font-size:13px;font-weight:600}
+svg .t-l{font-size:14px;font-weight:700}
+svg .t-mono{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+svg .zone{fill:none;stroke:var(--line);stroke-width:1.5;stroke-dasharray:6 5}
+svg .box{fill:var(--paper);stroke:var(--ink);stroke-width:1.4}
+svg .box-a{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+svg .box-s{fill:var(--signal-soft);stroke:var(--signal);stroke-width:1.4}
+svg .ln{stroke:var(--ink);stroke-width:1.6;fill:none}
+svg .ln-a{stroke:var(--accent);stroke-width:2;fill:none}
+svg .ln-rf{stroke:var(--accent);stroke-width:1.8;fill:none;stroke-dasharray:4 4}
+svg .ln-s{stroke:var(--signal);stroke-width:1.8;fill:none}
+svg .ln-m{stroke:var(--muted);stroke-width:1.2;fill:none;stroke-dasharray:2 4}
+svg .dot{fill:var(--accent)}
+svg .pk{fill:var(--accent);}
+svg .pk-t{font-family:var(--mono);font-size:11px;font-weight:600;fill:var(--paper)}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:15px}
+th,td{padding:10px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--bg)}
+td.r,th.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.sum td{font-weight:700;border-bottom:none;background:var(--accent-soft)}
+tr.sub td{color:var(--muted);font-size:14px}
+td small{display:block;color:var(--muted);font-size:13px;line-height:1.4}
+
+/* two columns of points */
+.grid2{display:grid;grid-template-columns:1fr;border-bottom:1px solid var(--line)}
+.grid2>div{display:grid;grid-template-columns:220px minmax(0,1fr);gap:8px 32px;align-items:start;padding:18px 0;border-top:1px solid var(--line);min-width:0}
+.grid2>div>h3{grid-column:1;grid-row:1}
+.grid2>div>:not(h3){grid-column:2;max-width:70ch}
+@media (max-width:640px){.grid2>div{grid-template-columns:1fr}.grid2>div>:not(h3),.grid2>div>h3{grid-column:1;grid-row:auto}}
+
+/* stages */
+.stages{display:grid;gap:0;border-left:2px solid var(--line);margin-left:6px}
+.stage{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;padding:0 0 22px 18px;position:relative}
+.stage::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--accent)}
+.stage .when{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;white-space:nowrap;padding-top:2px}
+.stage .what{display:grid;gap:4px;min-width:0}
+.stage h4{margin:0;font-size:16px;font-weight:600}
+.stage.phase{padding-top:6px}
+.stage.phase::before{background:var(--accent)}
+.stage.phase h3{font-family:var(--display);font-weight:500;font-size:19px}
+tr.ph td{font-family:var(--display);font-weight:500;font-size:15px;color:var(--accent);background:var(--bg)}
+tr.sum.total td{border-top:2px solid var(--accent)}
+@media (max-width:560px){.stage{grid-template-columns:1fr}}
+
+.foot{border-top:1px solid var(--line);padding-top:18px;font-size:14px;color:var(--muted);display:grid;gap:6px}
+.fnref{font-family:var(--mono);font-size:11px;line-height:0;margin-left:2px}
+.fnref a{text-decoration:none}
+.notes{display:grid;gap:10px;font-size:14px;color:var(--muted);max-width:760px}
+.notes ol{margin:0;padding-left:20px;display:grid;gap:10px}
+.notes ul{margin-top:6px}
+.notes b{color:var(--ink);font-weight:600}
+
+/* interactive scenarios (section 03): instrument-panel figure with transport controls */
+figure.sim{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+figure.sim .scroll{padding:12px 12px 6px}
+figure.sim svg{display:block;width:100%;min-width:760px;height:auto}
+.sim-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px 0}
+.sim-tabs button{font:500 13px var(--body);padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--muted);cursor:pointer}
+.sim-tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.ctl{display:flex;gap:8px;align-items:center;padding:9px 14px;border-top:1px solid var(--line);flex-wrap:wrap;background:var(--bg)}
+.ctl button{font:500 13px var(--body);padding:6px 14px;border-radius:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;min-width:5.5em}
+.ctl button[data-act="play"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.ctl .spd{display:inline-flex;gap:2px}
+.ctl .spd button{min-width:0;padding:6px 8px;font-family:var(--mono);font-size:12px}
+.ctl .spd button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
+.ctl input[type=range]{flex:1;min-width:140px;accent-color:var(--accent)}
+.clock{font:12px var(--mono);color:var(--muted);min-width:9ch;text-align:right;font-variant-numeric:tabular-nums}
+figure.sim figcaption{padding:10px 16px 14px;border-top:1px solid var(--line);font-size:15px;line-height:1.55;min-height:5.4em}
+.stepn{font:600 12px var(--mono);color:var(--accent);margin-right:8px;white-space:nowrap}
+.sim-tabs button:focus-visible,.ctl button:focus-visible,.ctl input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#sim svg text{font-family:var(--body);font-size:12.5px;fill:var(--ink)}
+#sim .sim-t-s{font-size:11.5px} #sim .sim-t-xs{font-size:10.5px} #sim .sim-t-m{fill:var(--muted)}
+#sim .sim-t-mono{font-family:var(--mono)} #sim .sim-t-b{font-weight:600} #sim .sim-t-acc{fill:var(--accent)}
+#sim .sim-t-ok{fill:var(--good)} #sim .sim-t-bad{fill:var(--bad)} #sim .sim-t-warn{fill:var(--signal)}
+#sim .sim-band{fill:var(--bg)}
+#sim .sim-box{fill:var(--paper);stroke:var(--line);stroke-width:1.3}
+#sim .sim-box-a{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+#sim .sim-dash{stroke-dasharray:5 4}
+#sim .sim-dead{fill:var(--paper);stroke:var(--bad);stroke-width:1.6;stroke-dasharray:5 4}
+#sim .sim-ln{stroke:var(--muted);stroke-width:1.3;fill:none}
+#sim .sim-ln.on{stroke:var(--accent);stroke-width:2.2}
+#sim .sim-ln.off{stroke-dasharray:4 4;opacity:.6}
+#sim .sim-ch{stroke-width:3;opacity:.35}
+#sim .sim-ch.c1{stroke:var(--pa)} #sim .sim-ch.c2{stroke:var(--pb)} #sim .sim-ch.c3{stroke:var(--pc)}
+#sim .sim-ch.dead{stroke:var(--bad);stroke-dasharray:5 5;opacity:.5}
+#sim .sim-eth{fill:none;stroke:var(--signal);stroke-width:2.4;opacity:.45}
+#sim .sim-eth.on{opacity:1}
+#sim .sim-eth.dead{stroke:var(--bad);stroke-dasharray:5 5;opacity:.6}
+#sim .sim-eth.idle{stroke:var(--muted);opacity:.35}
+#sim .sim-f-mut{fill:var(--muted)}
+#sim .tok circle{stroke:var(--paper);stroke-width:1.5}
+#sim .tok text{fill:#fff;font:600 9.5px var(--mono)}
+#sim .tok.c1 circle{fill:var(--pa)} #sim .tok.c2 circle{fill:var(--pb)} #sim .tok.c3 circle{fill:var(--pc)} #sim .tok.eth circle{fill:var(--signal)}
+#sim .brk{fill:var(--bad);font:700 18px var(--mono)}
+#sim .brk-l{fill:var(--bad);font:600 10.5px var(--mono)}
+
+/* architecture map: hover a node to read about it */
+svg .hot{fill:var(--accent);fill-opacity:0;stroke:var(--accent);stroke-width:2.2;stroke-opacity:0;cursor:pointer;outline:none}
+svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacity:1}
+.archinfo{display:grid;gap:4px;padding:12px 4px 2px;border-top:1px solid var(--line);min-height:6.2em;font-size:15px;line-height:1.55}
+.archinfo b{font-family:var(--display);font-weight:500;font-size:16px;color:var(--accent)}
+
+/* financial model (section 08): four numbered input steps, a results block in plain sentences, two tables, a yearly table and two one-series charts */
+.fm{display:grid;gap:14px}
+.fm-step{border:1px solid var(--line);border-radius:8px;background:var(--paper);margin:0;padding:16px 18px 16px;display:grid;gap:12px;min-width:0}
+.fm-step h3{margin:0 0 2px;font-family:var(--display);font-weight:500;font-size:17px;line-height:1.3;display:flex;gap:12px;align-items:baseline}
+.fm-n{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);min-width:4ch}
+.fm-hint{font-size:14px;color:var(--muted);line-height:1.5;max-width:70ch}
+.fm-sub{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}
+.fm-sub h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.fm-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 18px}
+.fm-fields label{display:grid;grid-row:span 2;grid-template-rows:subgrid;row-gap:5px;align-content:start;min-width:0;font-size:13.5px;line-height:1.4;color:var(--ink)}
+.fm-fields label small{display:block;font-size:12.5px;color:var(--muted);line-height:1.4}
+.fm-mxw{overflow-x:auto}
+.fm-mx{min-width:560px;font-size:14px;table-layout:fixed}
+.fm-mx th:first-child{width:34%}
+.fm-mx tbody th label{display:block;cursor:pointer}
+.fm-mx + .fm-mx,.fm-mxw + .fm-mxw{margin-top:4px}
+.fm-mx th,.fm-mx td{padding:6px 8px;border:0;text-transform:none;letter-spacing:0;vertical-align:middle;background:none}
+.fm-mx thead th{font-size:13px;font-weight:600;color:var(--muted);text-align:left}
+.fm-mx tbody th{font-weight:400;text-align:left;color:var(--ink);line-height:1.4}
+.fm-mx tbody th small{display:block;font-size:12.5px;color:var(--muted)}
+.fm input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.fm input[type=number]::-webkit-inner-spin-button,.fm input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.fm input.is-up{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.fm input.is-down{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.fm-in{display:flex;align-items:center;gap:4px;min-width:0;align-self:start}
+.fm-box{position:relative;flex:1;min-width:0}
+.fm-fields .fm-in{max-width:186px}
+.fm-reset{flex:none;width:26px;height:26px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer}
+.fm-reset:hover{color:var(--accent);background:var(--accent-soft)}
+.fm-reset:focus-visible{outline:2px solid var(--accent)}
+.fm-reset.off{visibility:hidden}
+.fm-u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none;white-space:nowrap}
+.fm-fields input,.fm-mx input{font-family:var(--mono);font-size:15px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;align-self:start}
+.fm b,.fm .v,.fm dd,.fm td:not(:first-child){white-space:nowrap}
+.fm-fields input:focus-visible,.fm-mx input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.fm-derived{font-size:14.5px;line-height:1.5;color:var(--muted);padding:10px 12px;border-radius:6px;background:var(--bg)}
+.fm-derived b{color:var(--ink);font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.fm-derived.fm-total{background:var(--accent-soft);color:var(--ink);font-size:15px}
+.fm-derived.fm-total b{color:var(--accent)}
+
+.fm-res{display:grid;gap:14px}
+.fm-hero{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:20px 22px 22px;display:grid;gap:10px}
+.fm-lead{font-family:var(--display);font-weight:500;font-size:clamp(19px,2.6vw,25px);line-height:1.3;text-wrap:balance;max-width:30ch}
+.fm-lead b{color:var(--accent);font-weight:700}
+.fm-when{font-size:16px;line-height:1.55;max-width:70ch}
+.fm-when b{font-weight:600;font-variant-numeric:tabular-nums}
+.fm-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.fm-fact{background:var(--paper);padding:16px 18px;display:grid;gap:4px;align-content:start}
+.fm-fact .v{font-family:var(--mono);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1.2}
+.fm-fact .v.v2{margin-top:8px}
+.fm-fact .k{font-size:14px;color:var(--muted);line-height:1.45}
+.fm-fact .v.neg{color:var(--bad)}
+.fm-dl{margin:4px 0 0;display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:14px}
+.fm-dl dt{color:var(--muted);line-height:1.4}
+.fm-dl dd{margin:0;font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;line-height:1.4}
+.fm-dl dd.neg{color:var(--bad)}
+.fm-dl .big{font-size:20px;color:var(--accent)}
+.fm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.fm-grid .tbl table{min-width:0}
+#fm-years td:first-child,#fm-unit td:first-child,#fm-once td:first-child{white-space:normal}
+#fm-years td.neg,#fm-unit td.neg,#fm-once td.neg{color:var(--bad)}
+.fm-chart{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.fm-ch-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:0 0 6px;font-size:14px;color:var(--muted)}
+.fm-ch-h b{color:var(--ink);font-weight:600}
+.fm-plot{position:relative;overflow-x:auto}
+.fm-plot svg{display:block;width:100%;min-width:640px;height:auto}
+.fm-plot svg text{font-family:var(--body);font-size:12px;fill:var(--muted)}
+.fm-plot .grid{stroke:var(--line);stroke-width:1}
+.fm-plot .zero{stroke:var(--muted);stroke-width:1.2}
+.fm-plot .line-base{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4;stroke-linejoin:round}
+.fm-leg{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:13px}
+.fm-leg[hidden]{display:none}
+.fm-leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--accent)}
+.fm-leg i.base{border-top:2px dashed var(--muted);margin-left:8px}
+.fm-plot .line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.fm-plot .area-neg{fill:var(--bad);opacity:.10}
+.fm-plot .area-pos{fill:var(--accent);opacity:.12}
+.fm-plot .mark{fill:var(--accent);stroke:var(--paper);stroke-width:2}
+.fm-plot .mark-t{fill:var(--ink);font-weight:600}
+.fm-plot .vline{stroke:var(--muted);stroke-width:1;stroke-dasharray:2 4}
+.fm-plot .xh{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.fm-plot .hit{fill:transparent;cursor:crosshair}
+.fm-tip{position:absolute;top:8px;pointer-events:none;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.45;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap;color:var(--ink)}
+.fm-tip b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+@media (max-width:520px){.fm-step{padding:14px}.fm-hero{padding:16px 16px 18px}.fm-fact{padding:14px 16px}}
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+<header class="head">
+  <div class="label">Коммерческое предложение № 2026-10-25-01 · 25 октября 2026</div>
+  <h1>Агрегация сотовых каналов: клиентское устройство, серверный кластер, разработка</h1>
+  <div class="meta">
+    <div><span class="label">Заказчик</span><b>«Комфортел»</b></div>
+    <div><span class="label">Основание</span><b>ТЗ заказчика, обсуждение 20.10.2026</b></div>
+    <div><span class="label">Срок действия</span><b>30 дней</b></div>
+  </div>
+</header>
+
+<section class="stack">
+  <h2>О команде</h2>
+  <ul class="col">
+    <li>В команде сетевые инженеры, программисты, архитекторы и авторы сетевых протоколов с опытом разработки и эксплуатации промышленных систем.</li>
+    <li>Команда разрабатывает sing-box-lx — движок маршрутизации трафика, на котором построены VPN-клиенты и клиенты защищённых каналов связи для компьютеров, мобильных устройств и роутеров.</li>
+    <li>Протокол балансировки loadbalance в sing-box-lx создан участником команды: он маршрутизирует по разным каналам и TCP-, и UDP-трафик.</li>
+    <li>Команда — разработчики ASOAR, скоринговой системы автоматизации для SIEM.</li>
+  </ul>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Платформа</th><th>Проект</th><th class="r">Звёзд</th><th class="r">Скачиваний</th></tr></thead>
+      <tbody>
+        <tr><td>Компьютеры<small>Windows, macOS, Linux</small></td><td><a href="https://github.com/Leadaxe/singbox-launcher" target="_blank" rel="noopener">singbox-launcher</a></td><td class="r">719</td><td class="r">46 000+</td></tr>
+        <tr><td>Мобильные устройства<small>Android</small></td><td><a href="https://github.com/Leadaxe/LxBox" target="_blank" rel="noopener">L×Box</a></td><td class="r">656</td><td class="r">63 000+</td></tr>
+        <tr><td>Роутеры и ядро<small>OpenWrt, удалённое управление парком</small></td><td><a href="https://github.com/Leadaxe/sing-box-lx" target="_blank" rel="noopener">sing-box-lx</a></td><td class="r">237</td><td class="r">24 000+</td></tr>
+        <tr class="sum"><td>Всего</td><td></td><td class="r">1 612</td><td class="r">133 000+</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap col">Данные GitHub на 25.10.2026. Скачивания посчитаны по последним 100 релизам каждого проекта.</p>
+</section>
+
+<section class="stack">
+  <h2><span class="n">00</span>Коротко</h2>
+  <p class="col">Предлагаем программно-аппаратный комплекс на серийных компонентах. Это промышленный подход: запуск проекта получается предсказуемым и управляемым. Клиент работает на OpenWrt, три сотовых канала идут через промышленные PoE-модемы, а собственный движок маршрутизации трафика распределяет соединения по каналам до ЦОД. Узлов агрегации два, в разных ЦОД: основной и резервный. Опираясь на наш опыт, мы уверенно доведём проект до серийного выпуска примерно за 8–10 месяцев. Пакетная агрегация — возможный следующий шаг развития при коммерческом успехе проекта.</p>
+</section>
+
+<section class="stack">
+  <h2><span class="n">01</span>Как мы поняли задачу</h2>
+  <div class="col stack">
+    <p>Клиентское устройство на объекте работает как Wi-Fi-роутер. Весь трафик объекта идёт через ЦОД: основной канал до узла агрегации — Ethernet провайдера, три сотовых канала держатся в резерве. Так любой канал, включая основной, остаётся управляемым, а внешние сайты всегда видят один адрес — адрес узла агрегации. В режиме агрегации устройство использует все рабочие сотовые каналы одновременно. Главное требование к продукту — надёжность: отказ модема, SIM-карты, оператора или сервера не должен оставлять объект без связи.</p>
+  </div>
+</section>
+
+<section class="stack">
+  <h2><span class="n">02</span>Архитектура</h2>
+  <p class="col">Первая версия распределяет по каналам соединения. Каждое новое соединение получает живой канал по взвешенному кругу (weighted round-robin): быстрые каналы получают соединения чаще, медленные реже. Закрепления соединений за каналами нет. Узел пакеты не склеивает: он принимает соединения из всех каналов и открывает их в интернет со своего адреса. Такая схема проста, предсказуема и дёшево масштабируется на стороне сервера. Пакетная агрегация, при которой складывается скорость и внутри одного соединения, — следующий шаг развития по результатам первых внедрений.</p>
+  <div class="figure">
+    <div class="scroll">
+<svg viewBox="0 0 1000 540" role="img" aria-label="Схема комплекса: клиентский объект с роутером, PoE-коммутатором, тремя PoE-модемами и точкой доступа; сотовые операторы; два ЦОД с узлами агрегации">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+    <marker id="ar-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--signal)"/></marker>
+  </defs>
+
+  <!-- client site -->
+  <rect class="zone" x="12" y="28" width="470" height="470" rx="10"/>
+  <text class="t-l" x="28" y="52">Объект заказчика</text>
+  <text class="t-s" x="28" y="70">всё на OpenWrt, управление по сети</text>
+
+  <!-- router -->
+  <rect class="box-a" x="28" y="196" width="134" height="92" rx="7"/>
+  <text class="t-m" x="40" y="220" style="font-size:12px">Роутер-агрегатор</text>
+  <text class="t-s" x="40" y="238">NanoPi R5S</text>
+  <text class="t-mono" x="40" y="256">2×2.5G + 1×1G</text>
+  <text class="t-mono" x="40" y="273">движок трафика</text>
+
+  <!-- switch -->
+  <rect class="box" x="196" y="150" width="122" height="186" rx="7"/>
+  <text class="t-m" x="208" y="174" style="font-size:12px">PoE-коммутатор</text>
+  <text class="t-s" x="208" y="192">GS1900-10HP</text>
+  <text class="t-mono" x="208" y="214">PoE+ 802.3at</text>
+  <text class="t-mono" x="208" y="231">VLAN 101–103:</text>
+  <text class="t-mono" x="208" y="246">модемы</text>
+  <text class="t-mono" x="208" y="263">VLAN 10: LAN</text>
+  <text class="t-mono" x="208" y="288">сброс модема</text>
+  <text class="t-mono" x="208" y="303">питанием порта</text>
+
+  <!-- modems -->
+  <rect class="box-a" x="346" y="92" width="122" height="64" rx="7"/>
+  <text class="t-m" x="358" y="116">PoE-модем 1</text>
+  <text class="t-mono" x="358" y="134">RM520N · 2 SIM</text>
+  <rect class="box-a" x="346" y="212" width="122" height="64" rx="7"/>
+  <text class="t-m" x="358" y="236">PoE-модем 2</text>
+  <text class="t-mono" x="358" y="254">RM520N · 2 SIM</text>
+  <rect class="box-a" x="346" y="332" width="122" height="64" rx="7"/>
+  <text class="t-m" x="358" y="356">PoE-модем 3</text>
+  <text class="t-mono" x="358" y="374">RM520N · 2 SIM</text>
+
+  <!-- switch-modem links -->
+  <path class="ln" d="M318 180 H332 V124 H346"/>
+  <path class="ln" d="M318 244 H346"/>
+  <path class="ln" d="M318 306 H332 V364 H346"/>
+  <text class="t-mono" x="322" y="88">PoE + Ethernet</text>
+
+  <!-- router-switch links -->
+  <path class="ln-a" d="M162 226 H196"/>
+  <text class="t-mono" x="164" y="218" style="font-size:10px">транк</text>
+  <path class="ln" d="M162 262 H196"/>
+  <text class="t-mono" x="168" y="279">LAN</text>
+
+  <!-- AP -->
+  <rect class="box" x="196" y="396" width="122" height="62" rx="7"/>
+  <text class="t-m" x="208" y="420">Точка доступа</text>
+  <text class="t-s" x="208" y="438">Wi-Fi 6, PoE</text>
+  <path class="ln" d="M257 336 V396"/>
+  <text class="t-mono" x="263" y="372">PoE</text>
+  <text class="t-s" x="196" y="480">Wi-Fi 6 для пользователей</text>
+
+  <!-- ISP -->
+  <rect class="box-s" x="28" y="396" width="134" height="62" rx="7"/>
+  <text class="t-m" x="40" y="420">Провайдер</text>
+  <text class="t-s" x="40" y="438">Ethernet, основной</text>
+  <path class="ln-s" d="M95 288 V396"/>
+  <text class="t-mono" x="101" y="350">1G, мимо</text>
+  <text class="t-mono" x="101" y="364">коммутатора</text>
+
+  <!-- operators -->
+  <rect class="box" x="532" y="96" width="132" height="56" rx="28"/>
+  <text class="t-m" x="556" y="121">Оператор A</text>
+  <text class="t-mono" x="556" y="138">LTE / 5G</text>
+  <rect class="box" x="532" y="216" width="132" height="56" rx="28"/>
+  <text class="t-m" x="556" y="241">Оператор B</text>
+  <text class="t-mono" x="556" y="258">LTE / 5G</text>
+  <rect class="box" x="532" y="336" width="132" height="56" rx="28"/>
+  <text class="t-m" x="556" y="361">Оператор C</text>
+  <text class="t-mono" x="556" y="378">LTE / 5G</text>
+  <path class="ln-rf" d="M468 124 H532"/>
+  <path class="ln-rf" d="M468 244 H532"/>
+  <path class="ln-rf" d="M468 364 H532"/>
+
+  <!-- ISP to internet -->
+  <path class="ln-s" d="M162 427 H180 V514 H700 V474" marker-end="url(#ar-s)"/>
+  <text class="t-mono" x="352" y="508">основной канал до ЦОД через Ethernet</text>
+
+  <!-- internet transport bus -->
+  <rect class="box" x="690" y="96" width="40" height="376" rx="20"/>
+  <text class="t-m" transform="translate(716 340) rotate(-90)">Интернет (транспорт)</text>
+  <path class="ln-a" d="M664 124 H690"/>
+  <path class="ln-a" d="M664 244 H690"/>
+  <path class="ln-a" d="M664 364 H690"/>
+
+  <!-- DCs -->
+  <rect class="zone" x="752" y="28" width="236" height="214" rx="10"/>
+  <text class="t-l" x="768" y="52">ЦОД 1</text>
+  <rect class="box-a" x="768" y="66" width="204" height="104" rx="7"/>
+  <text class="t-m" x="780" y="90">Узел агрегации 1</text>
+  <text class="t-s" x="780" y="110">приём каналов</text>
+  <text class="t-s" x="780" y="126">выход с адреса узла</text>
+  <text class="t-s" x="780" y="142">управление, мониторинг</text>
+  <text class="t-mono" x="768" y="196">подключение 2×10G</text>
+  <text class="t-mono" x="768" y="212">выходной адрес</text>
+  <text class="t-mono" x="768" y="228">ЦОД 1</text>
+
+  <rect class="zone" x="752" y="286" width="236" height="214" rx="10"/>
+  <text class="t-l" x="768" y="310">ЦОД 2</text>
+  <rect class="box-a" x="768" y="324" width="204" height="104" rx="7"/>
+  <text class="t-m" x="780" y="348">Узел агрегации 2</text>
+  <text class="t-s" x="780" y="368">приём каналов</text>
+  <text class="t-s" x="780" y="384">выход с адреса узла</text>
+  <text class="t-s" x="780" y="400">управление, мониторинг</text>
+  <text class="t-mono" x="768" y="454">подключение 2×10G</text>
+  <text class="t-mono" x="768" y="470">выходной адрес</text>
+  <text class="t-mono" x="768" y="486">ЦОД 2</text>
+
+  <path class="ln-s" d="M920 242 V286" marker-start="url(#ar-s)" marker-end="url(#ar-s)"/>
+  <text class="t-mono" x="928" y="268">резерв</text>
+
+  <path class="ln-a" d="M730 118 H768" marker-end="url(#ar)"/>
+  <path class="ln-a" d="M730 376 H768" marker-end="url(#ar)"/>
+
+  <!-- legend -->
+  <g transform="translate(28 24)">
+    <line class="ln-rf" x1="300" y1="-8" x2="330" y2="-8"/><text class="t-s" x="336" y="-4">радио</text>
+    <line class="ln-a" x1="386" y1="-8" x2="416" y2="-8"/><text class="t-s" x="422" y="-4">каналы до ЦОД</text>
+    <line class="ln-s" x1="540" y1="-8" x2="570" y2="-8"/><text class="t-s" x="576" y="-4">основной Ethernet</text>
+  </g>
+  <g class="hots">
+    <rect class="hot" data-k="router" x="28" y="196" width="134" height="92" rx="7" tabindex="0" role="button" aria-label="Роутер-агрегатор"/>
+    <rect class="hot" data-k="switch" x="196" y="150" width="122" height="186" rx="7" tabindex="0" role="button" aria-label="PoE-коммутатор"/>
+    <rect class="hot" data-k="modem1" x="346" y="92" width="122" height="64" rx="7" tabindex="0" role="button" aria-label="PoE-модем 1"/>
+    <rect class="hot" data-k="modem2" x="346" y="212" width="122" height="64" rx="7" tabindex="0" role="button" aria-label="PoE-модем 2"/>
+    <rect class="hot" data-k="modem3" x="346" y="332" width="122" height="64" rx="7" tabindex="0" role="button" aria-label="PoE-модем 3"/>
+    <rect class="hot" data-k="ap" x="196" y="396" width="122" height="62" rx="7" tabindex="0" role="button" aria-label="Точка доступа"/>
+    <rect class="hot" data-k="isp" x="28" y="396" width="134" height="62" rx="7" tabindex="0" role="button" aria-label="Провайдер Ethernet"/>
+    <rect class="hot" data-k="opA" x="532" y="96" width="132" height="56" rx="28" tabindex="0" role="button" aria-label="Оператор A"/>
+    <rect class="hot" data-k="opB" x="532" y="216" width="132" height="56" rx="28" tabindex="0" role="button" aria-label="Оператор B"/>
+    <rect class="hot" data-k="opC" x="532" y="336" width="132" height="56" rx="28" tabindex="0" role="button" aria-label="Оператор C"/>
+    <rect class="hot" data-k="bus" x="690" y="96" width="40" height="376" rx="20" tabindex="0" role="button" aria-label="Интернет как транспорт"/>
+    <rect class="hot" data-k="dc1" x="752" y="28" width="236" height="214" rx="10" tabindex="0" role="button" aria-label="ЦОД 1"/>
+    <rect class="hot" data-k="dc2" x="752" y="286" width="236" height="214" rx="10" tabindex="0" role="button" aria-label="ЦОД 2"/>
+  </g>
+</svg>
+    </div>
+    <div class="archinfo" id="archinfo" aria-live="polite"><b>Схема комплекса</b><span>Наведите курсор на элемент схемы или нажмите на него — здесь появится его описание.</span></div>
+    <p class="cap">Сотовые каналы приходят в роутер как обычные Ethernet-интерфейсы. Роутер держит каналы к основному и резервному узлам в разных ЦОД. Основной Ethernet-канал тоже идёт до узла агрегации, поэтому управляется так же, как сотовые. К роутеру он подключён напрямую, и отказ коммутатора отключает только резерв.</p>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3>Роутер-агрегатор</h3>
+      <p>NanoPi R5S на OpenWrt: три порта, 4 ГБ памяти, металлический корпус. На нём работает движок маршрутизации трафика: каналы до ЦОД, распределение соединений, переключение «Ethernet → сотовые», веб-интерфейс и агент удалённого управления. Модемы подключаются по Ethernet, поэтому роутер не зависит от драйверов модемов и при необходимости меняется на модель мощнее (NanoPi R6S) без переделки софта.</p>
+    </div>
+    <div>
+      <h3>PoE-модемы</h3>
+      <p>Промышленный модуль Quectel RM520N-GL (Qualcomm X62, 5G и LTE-A кат. 20) на плате M.2 → Ethernet 2.5G с питанием по PoE. Модуль сам поднимает соединение и отдаёт адрес оператора в роутер (IP passthrough). Две SIM-карты на модем с переключением по команде. Модем ставится до 100 м от роутера: у окна, на чердаке или на мачте в гермокорпусе.</p>
+      <p>Число модемов в комплекте не зашито в устройство: на одном коммутаторе собираются комплекты на 3, 4 или 5 модемов. Каждый новый модем получает свой порт с PoE и свой VLAN, а роутер сам добавляет его канал в круг распределения. Состав комплекта, SIM-карты и операторы по каналам задаются в системе управления удалённо.</p>
+    </div>
+    <div>
+      <h3>Управляемый коммутатор</h3>
+      <p>Zyxel GS1900-10HP (или D-Link DGS-1210-10P) с прошивкой OpenWrt: каждый модем в своём VLAN, к роутеру идёт один транк. Питание каждого порта включается и выключается программно. Это аппаратный сброс зависшего модема без выезда инженера.</p>
+    </div>
+    <div>
+      <h3>Wi-Fi</h3>
+      <p>Отдельная точка доступа Wi-Fi 6 с питанием от того же коммутатора и прошивкой OpenWrt, как у роутера и коммутатора: всё оборудование комплекта управляется одинаково. Точка ставится там, где нужно покрытие, а не там, где стоит роутер.</p>
+    </div>
+    <div>
+      <h3>Дашборд и мониторинг</h3>
+      <p>Этап II. Веб-панель для всего парка устройств; на этапе I устройства настраиваются конфигурацией вручную, а состояние каналов видно через метрики ядра. По каждому объекту видно состояние каналов: Ethernet и каждый модем — на связи или нет, оператор, уровень и качество сигнала, задержка до узла, скорость, число соединений и вес канала в круге. История по каналам хранится, поэтому видно, какой оператор на конкретном объекте работает хуже других.</p>
+      <p>События и оповещения: пропал канал, модем перезагружен по PoE, переключилась SIM-карта, объект ушёл с Ethernet на сотовые каналы или на резервный ЦОД. Оповещения уходят в Telegram, на почту или во внешнюю систему заказчика. Отчёты о доступности строятся по каждому объекту и каналу.</p>
+      <p>Из панели выполняются удалённые действия: перезагрузить модем, переключить SIM-карту, задать вес канала, обновить прошивку. По узлам агрегации видны нагрузка и число подключённых объектов. Метрики выгружаются в Prometheus или Zabbix, если у заказчика своя система мониторинга.</p>
+    </div>
+  </div>
+</section>
+
+<section class="stack">
+  <h2><span class="n">03</span>Движок маршрутизации трафика</h2>
+  <figure class="sim" id="sim">
+    <div class="sim-tabs" role="tablist" aria-label="Сценарии: один «Пуск» проигрывает их по очереди, вкладка переходит к сценарию">
+      <button type="button" role="tab" aria-selected="true">1 · Основной Ethernet</button>
+      <button type="button" role="tab" aria-selected="false">2 · Взвешенный круг</button>
+      <button type="button" role="tab" aria-selected="false">3 · Пропал канал</button>
+      <button type="button" role="tab" aria-selected="false">4 · Завис модем</button>
+      <button type="button" role="tab" aria-selected="false">5 · Отказ ЦОД</button>
+    </div>
+    <div class="scroll">
+<svg viewBox="0 0 900 420" role="img" aria-label="Схема работы движка: устройство LAN, роутер, три сотовых канала до узла агрегации в ЦОД 1, резервный ЦОД 2, интернет и основной Ethernet. Соединения расходятся по каналам по кругу; вкладки показывают отказ канала, зависание модема, пропадание Ethernet, отказ ЦОД и пакетную агрегацию.">
+  <defs>
+    <marker id="sim-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="sim-f-mut"/></marker>
+  </defs>
+  <rect x="250" y="108" width="290" height="194" class="sim-band"/>
+  <text x="395" y="100" text-anchor="middle" class="sim-t-s sim-t-m">сети операторов · стандартные HTTPS и HTTP/3 (QUIC)</text>
+
+  <circle cx="34" cy="205" r="15" class="sim-box"/>
+  <text x="34" y="238" text-anchor="middle" class="sim-t-s">LAN</text>
+  <line x1="49" y1="205" x2="64" y2="205" class="sim-ln"/>
+
+  <rect x="64" y="70" width="150" height="270" rx="8" class="sim-box-a"/>
+  <text x="76" y="93" class="sim-t-b">Роутер</text>
+  <text x="76" y="110" class="sim-t-s sim-t-m">движок маршрутизации</text>
+  <text x="76" y="298" class="sim-t-s sim-t-m" id="sim-ptr-k">следующий канал</text>
+  <text x="76" y="318" class="sim-t-b sim-t-acc" id="sim-ptr">—</text>
+
+  <line x1="214" y1="135" x2="578" y2="135" class="sim-ch c1" id="sim-ch1"/>
+  <line x1="214" y1="205" x2="578" y2="205" class="sim-ch c2" id="sim-ch2"/>
+  <line x1="214" y1="275" x2="578" y2="275" class="sim-ch c3" id="sim-ch3"/>
+  <text x="232" y="126" class="sim-t-s">канал 1 · оператор A</text>
+  <text x="232" y="196" class="sim-t-s">канал 2 · оператор B</text>
+  <text x="232" y="266" class="sim-t-s">канал 3 · оператор C</text>
+  <text x="548" y="126" text-anchor="end" class="sim-t-s sim-t-mono" id="sim-st1"></text>
+  <text x="548" y="196" text-anchor="end" class="sim-t-s sim-t-mono" id="sim-st2"></text>
+  <text x="548" y="266" text-anchor="end" class="sim-t-s sim-t-mono" id="sim-st3"></text>
+  <text x="232" y="152" class="sim-t-xs sim-t-m sim-t-mono" id="sim-n1"></text>
+  <text x="232" y="222" class="sim-t-xs sim-t-m sim-t-mono" id="sim-n2"></text>
+  <text x="232" y="292" class="sim-t-xs sim-t-m sim-t-mono" id="sim-n3"></text>
+
+  <rect x="566" y="110" width="24" height="200" rx="12" class="sim-box"/>
+  <line x1="590" y1="135" x2="620" y2="135" class="sim-ln" id="sim-l-dc1"/>
+  <line x1="590" y1="280" x2="620" y2="280" class="sim-ln" id="sim-l-dc2"/>
+
+  <rect x="620" y="80" width="150" height="110" rx="8" class="sim-box-a" id="sim-dc1"/>
+  <text x="632" y="102" class="sim-t-b">ЦОД 1</text>
+  <text x="632" y="118" class="sim-t-s sim-t-m">узел агрегации</text>
+  <text x="632" y="178" class="sim-t-s sim-t-mono" id="sim-dc1-st"></text>
+  <rect x="620" y="225" width="150" height="110" rx="8" class="sim-box sim-dash" id="sim-dc2"/>
+  <text x="632" y="247" class="sim-t-b">ЦОД 2</text>
+  <text x="632" y="263" class="sim-t-s sim-t-m">узел агрегации</text>
+  <text x="632" y="323" class="sim-t-s sim-t-mono" id="sim-dc2-st"></text>
+
+  <line x1="770" y1="135" x2="806" y2="200" class="sim-ln" id="sim-o-dc1"/>
+  <line x1="770" y1="280" x2="806" y2="210" class="sim-ln" id="sim-o-dc2"/>
+  <rect x="806" y="180" width="86" height="50" rx="25" class="sim-box"/>
+  <text x="849" y="210" text-anchor="middle" class="sim-t-s">интернет</text>
+  <text x="849" y="252" text-anchor="middle" class="sim-t-xs sim-t-m" id="sim-exit-k">адрес выхода</text>
+  <text x="849" y="268" text-anchor="middle" class="sim-t-s sim-t-mono sim-t-b" id="sim-exit"></text>
+  <text x="849" y="284" text-anchor="middle" class="sim-t-xs sim-t-m" id="sim-exit-2"></text>
+
+  <path d="M139,340 V392 H578 V310" class="sim-eth" id="sim-eth"/>
+  <text x="160" y="384" class="sim-t-s">Ethernet провайдера · основной канал до ЦОД</text>
+  <text x="160" y="404" class="sim-t-s sim-t-mono" id="sim-eth-st"></text>
+
+  <g class="sim-dyn"></g>
+</svg>
+    </div>
+    <div class="ctl"><button type="button" data-act="play">Пуск</button><button type="button" data-act="reset">Сброс</button><input type="range" aria-label="Шкала времени анимации"><span class="clock"></span></div>
+    <figcaption><span class="stepn"></span><span class="step"></span></figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div>
+      <h3>Что это</h3>
+      <p>Собственный движок маршрутизации трафика работает на роутере и на узлах агрегации. На роутере он принимает каждое соединение из LAN, по правилам выбирает для него канал и ведёт его до узла по зашифрованному транспорту. Узел открывает соединение в интернет со своего адреса. Правила учитывают домены, адреса, порты и протоколы. Балансировка, проверка каналов, переключение между ЦОД и удалённое управление уже есть в движке и работают на роутерах OpenWrt.</p>
+    </div>
+    <div>
+      <h3>Режим 1: соединения по взвешенному кругу</h3>
+      <ul>
+        <li>Каждый модем — отдельный канал до узла, привязанный к своему интерфейсу.</li>
+        <li>Новые соединения раздаются по взвешенному кругу: доля канала пропорциональна его скорости. При скоростях 120, 80 и 60 Мбит/с из каждых 13 соединений каналы получают 6, 4 и 3, вперемешку: 1, 2, 3, 1, 2, 1, 3, … Закрепления соединений за каналами нет.</li>
+        <li>Скорость канала движок оценивает сам, по трафику, который канал реально пропускал, без замеров, которые тратят трафик. Вес можно задать и вручную, например для канала с известным ограничением тарифа.</li>
+        <li>Канал либо имеет связь с узлом, либо нет: проверка идёт через сам канал. Канал без связи выпадает из круга и возвращается после восстановления.</li>
+        <li>Комплекты на 3, 4 или 5 модемов отличаются только списком каналов в конфигурации.</li>
+        <li>Основной ЦОД и резервный: если основной недоступен, движок переводит каналы на резервный.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Ограничения режима 1</h3>
+      <p>Одно соединение не быстрее своего канала: скачивание в один поток или один видеозвонок идут со скоростью одного модема. Открытое соединение живёт внутри своего канала. Если модем пропал, его соединения рвутся и приложения переподключаются, а новые соединения сразу идут по живым каналам. Для браузера и мессенджеров это секунды.</p>
+    </div>
+    <div>
+      <h3>Почему без eBPF</h3>
+      <p>Канал выбирается один раз на соединение, а не на каждый пакет, поэтому выносить это решение в ядро Linux незачем. Правила, проверка каналов и переключение ЦОД работают в пользовательском пространстве и обновляются без перезагрузки роутера. Производительность на выбранном роутере замеряется на шаге I.1, запас по мощности даёт NanoPi R6S.</p>
+    </div>
+    <div>
+      <h3>Транспорт на стандартных веб-протоколах</h3>
+      <p>Канал до узла агрегации строится поверх HTTPS (TLS 1.3) и HTTP/3 (QUIC), тех же протоколов, на которых работают веб-сервисы и облачные приложения. Сетевые политики операторов к ним наиболее стабильны. Если один вид транспорта на канале работает плохо, канал переключается на другой, остальные каналы это не затрагивает.</p>
+      <p>Это наше преимущество перед корпоративными VPN и SD-WAN на IPsec, WireGuard и OpenVPN. Эти решения используют специализированные туннельные протоколы, и их работа в сотовых сетях напрямую зависит от того, какие ограничения и тарифные правила оператор применяет к таким протоколам.</p>
+    </div>
+    <div>
+      <h3>Режим 2: пакетная агрегация</h3>
+      <p>Следующий шаг развития при коммерческом успехе проекта. Пакеты одного соединения расходятся по всем каналам и собираются на узле по номерам, так складывается скорость и внутри одного соединения. bonding и teql на сотовых каналах с плавающей задержкой не работают, MPTCP складывает только TCP, поэтому режим 2 делается в нашем движке поверх тех же каналов.</p>
+    </div>
+    <div>
+      <h3>Уровень L3</h3>
+      <p>Движок работает с IP-соединениями. Прозрачный L2-канал из ТЗ не делаем: передача Ethernet-кадров добавляет широковещательный трафик и накладные расходы на сотовых каналах, а задачу единого выходного адреса L3 решает полностью. Подробнее — в разделе 10.</p>
+    </div>
+  </div>
+</section>
+
+<section class="stack">
+  <h2><span class="n">04</span>Клиентский комплект: стоимость</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Позиция</th><th class="r">Кол-во</th><th class="r">Цена, ₽</th><th class="r">Сумма, ₽</th></tr></thead>
+      <tbody>
+        <tr><td>NanoPi R5S 4/32 ГБ в металлическом корпусе</td><td class="r">1</td><td class="r">25 000</td><td class="r">25 000</td></tr>
+        <tr><td>Резервная microSD-карта с системой и настройками объекта<small>для загрузки роутера при сбое основной системы</small></td><td class="r">1</td><td class="r">5 000</td><td class="r">5 000</td></tr>
+        <tr><td>Модуль Quectel RM520N-GL (5G / LTE-A кат. 20)</td><td class="r">3</td><td class="r">31 850</td><td class="r">95 550</td></tr>
+        <tr><td>Плата M.2 → 2.5GbE (RTL8125BG) с PoE, 2 SIM, металлический корпус</td><td class="r">3</td><td class="r">7 800</td><td class="r">23 400</td></tr>
+        <tr><td>Радиатор и термопрокладка модуля</td><td class="r">3</td><td class="r">520</td><td class="r">1 560</td></tr>
+        <tr><td>Сотовые антенны 600–6000 МГц, 4 на модем</td><td class="r">12</td><td class="r">520</td><td class="r">6 240</td></tr>
+        <tr><td>PoE-коммутатор Zyxel GS1900-10HP<small>аналог D-Link DGS-1210-10P</small></td><td class="r">1</td><td class="r">20 150</td><td class="r">20 150</td></tr>
+        <tr><td>Точка доступа Wi-Fi 6 с питанием PoE<small>с поддержкой OpenWrt; для расчёта в качестве примера взята TP-Link EAP620 HD</small></td><td class="r">1</td><td class="r">14 300</td><td class="r">14 300</td></tr>
+        <tr><td>Патч-корды, блок питания роутера, крепёж</td><td class="r">1</td><td class="r">1 950</td><td class="r">1 950</td></tr>
+        <tr><td>Сборка, прошивка, выходной контроль 24 ч, упаковка</td><td class="r">1</td><td class="r">от 70 000</td><td class="r">70 000</td></tr>
+        <tr class="sub"><td>Гарантийный резерв 4 %</td><td class="r"></td><td class="r"></td><td class="r">10 530</td></tr>
+        <tr class="sum"><td>Итого комплект</td><td class="r"></td><td class="r"></td><td class="r">≈ 273 700</td></tr>
+        <tr class="sub"><td>Опция: уличная установка модемов, гермокорпус IP67 с гермовводами</td><td class="r">3</td><td class="r"></td><td class="r">+ 35 000</td></tr>
+        <tr class="sub"><td>Опция: дополнительный модем, 4-й и 5-й канал (модуль, плата, радиатор, 4 антенны)</td><td class="r">1</td><td class="r"></td><td class="r">+ 42 250</td></tr>
+        <tr class="sub"><td>Опция: роутер NanoPi R6S вместо R5S (запас производительности ×2–3)</td><td class="r">1</td><td class="r"></td><td class="r">+ 25 000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col stack">
+    <p class="note">Крупнейшие статьи — три модема и сборка с выходным контролем. RM520N выбран потому, что только модули Quectel на Qualcomm X55/X62 умеют работать как самостоятельный Ethernet-модем. Это даёт PoE, сброс по питанию и установку модема у окна. SIM-карты и тарифы в стоимость не входят.</p>
+    <p class="note">Стоимость комплекта рассчитана по розничным ценам. После подбора поставщиков, начиная с 10-го комплекта, она снижается на 30 %, примерно до 191 600 ₽.</p>
+  </div>
+</section>
+
+<section class="stack">
+  <h2><span class="n">05</span>Серверная часть</h2>
+  <div class="col stack">
+    <p>Сервер стоит в ЦОД на проводных каналах. Две площадки, в каждой один узел агрегации с подключением 2×10G и своим выходным адресом. Половина клиентов работает через ЦОД 1, половина через ЦОД 2, второй ЦОД у каждого клиента резервный. Резервирование идёт только между ЦОД: при отказе узла или площадки её клиенты переходят на второй узел, открытые соединения при этом рвутся, а выходной адрес меняется. Управление и мониторинг работают на обоих узлах.</p>
+    <h3>Расчёт мощности пары узлов на 100 объектов</h3>
+    <div class="tbl">
+      <table>
+        <tbody>
+          <tr><td>Пиковая скорость одного объекта<small>весь трафик объекта, включая основной Ethernet, идёт через ЦОД</small></td><td class="r">500 Мбит/с</td></tr>
+          <tr><td>Доля объектов в пике одновременно</td><td class="r">30 %</td></tr>
+          <tr><td>Пиковая нагрузка: 100 × 500 × 30 %</td><td class="r">15 Гбит/с</td></tr>
+          <tr><td>Обычная работа: нагрузка делится между ЦОД</td><td class="r">≈ 7,5 Гбит/с на узел</td></tr>
+          <tr><td>Отказ ЦОД: один узел принимает всех, в пределах подключения 2×10G</td><td class="r">15 Гбит/с</td></tr>
+          <tr><td>Требование к узлу, замеряется на шаге I.1</td><td class="r">15 Гбит/с</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Позиция</th><th class="r">Кол-во</th><th class="r">Цена, ₽</th><th class="r">Сумма, ₽</th></tr></thead>
+      <tbody>
+        <tr><td>Узел агрегации: AMD EPYC 32 ядра, 128 ГБ, 2×25GbE</td><td class="r">2</td><td class="r">1 800 000</td><td class="r">3 600 000</td></tr>
+        <tr><td>ЗИП: диски, блоки питания, сетевые карты</td><td class="r">1</td><td class="r">400 000</td><td class="r">400 000</td></tr>
+        <tr class="sum"><td>Итого капитальные затраты</td><td class="r"></td><td class="r"></td><td class="r">4 000 000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Эксплуатация в месяц</th><th class="r">Сумма, ₽</th></tr></thead>
+      <tbody>
+        <tr><td>Размещение в двух ЦОД, по 2U</td><td class="r">60 000</td></tr>
+        <tr><td>Подключение 2×10G в каждом ЦОД</td><td class="r">480 000</td></tr>
+        <tr class="sum"><td>Итого в месяц</td><td class="r">540 000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap col">Рост: следующая пара узлов, по одному в каждом ЦОД, добавляется на каждые 100 объектов, вместе с ней — размещение и подключение по таблице выше. Цены серверного оборудования ориентировочные и фиксируются коммерческим предложением поставщика.</p>
+</section>
+
+<section class="stack">
+  <h2><span class="n">06</span>Надёжность</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Что отказывает</th><th>Что происходит</th></tr></thead>
+      <tbody>
+        <tr><td>Модем завис</td><td>Роутер не видит ответа модема и выключает PoE на его порту. Соединения этого канала рвутся и переподключаются через остальные. Модем перезагружается и возвращается в круг без участия человека.</td></tr>
+        <tr><td>SIM-карта или оператор</td><td>Модем переходит на вторую SIM. Пока канал недоступен, трафик идёт по остальным.</td></tr>
+        <tr><td>Основной Ethernet</td><td>Канал Ethernet до узла не проходит проверку, трафик переходит на сотовые каналы до того же узла. Открытые соединения переподключаются, адрес выхода не меняется. Ethernet подключён к роутеру напрямую и от коммутатора не зависит.</td></tr>
+        <tr><td>Коммутатор</td><td>Пропадает только резерв. Основной Ethernet продолжает работать.</td></tr>
+        <tr><td>Узел агрегации или ЦОД целиком</td><td>Клиент переводит трафик на резервный ЦОД. Открытые соединения рвутся, приложения переподключаются, внешние сайты видят выходной адрес резервного ЦОД.</td></tr>
+        <tr><td>Нет передачи данных ни по одному каналу</td><td>Устройство принимает служебные SMS-команды (перезагрузка, смена профиля) и сообщает о проблеме по SMS.</td></tr>
+        <tr><td>Неудачное обновление прошивки</td><td>Две копии системы на роутере: при сбое загрузки устройство возвращается к прошлой версии. В комплекте резервная microSD-карта с системой и настройками объекта: если роутер не загружается, карта вставляется в слот и он загружается с неё, без выезда инженера. Крайний случай — отправка роутера из ЗИП с готовой конфигурацией объекта.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="stack">
+  <h2><span class="n">07</span>Этапы и сроки</h2>
+  <div class="stages col">
+    <div class="stage phase"><span class="when">≈ 8 мес.</span><div class="what"><h3>Этап I. Инженерный путь</h3><p class="muted">Методология настройки и демонстрация работы ядра системы на объектах заказчика. Комплекты настраиваются конфигурацией вручную, по документированной методике.</p></div></div>
+    <div class="stage"><span class="when">2 нед.</span><div class="what"><h4>I.0. Уточнение ТЗ</h4><p class="muted">Ответы на вопросы раздела 11, согласование критериев приёмки и сценариев испытаний.</p></div></div>
+    <div class="stage"><span class="when">6–8 нед.</span><div class="what"><h4>I.1. Стенд и замеры</h4><p class="muted">Стенд из 2 комплектов и 2 узлов. Замеры скорости и задержки на трёх операторах, замер производительности узла. Проверка PoE, нагрева и IP passthrough модемов. Результат: отчёт с цифрами и уточнённая смета.</p></div></div>
+    <div class="stage"><span class="when">12 нед.</span><div class="what"><h4>I.2. Рабочая версия ядра системы</h4><p class="muted">Клиент на OpenWrt: движок со взвешенным кругом, переключение Ethernet → сотовые. Узлы в двух ЦОД и переключение между ними. Доработки ядра: веса каналов, метрики каналов, поток событий. Скрипты роутера: сторож модемов со сбросом PoE, переключение SIM, SMS, обновление прошивки по сети.</p></div></div>
+    <div class="stage"><span class="when">8 нед.</span><div class="what"><h4>I.3. Ввод в коммерческую эксплуатацию</h4><p class="muted">Первые комплекты на объектах заказчика в коммерческой работе: монтаж, настройка по методике, сопровождение, наблюдение за каналами и отказами через метрики ядра.</p></div></div>
+    <div class="stage"><span class="when">4–6 нед.</span><div class="what"><h4>I.4. Подготовка серии</h4><p class="muted">Фиксация состава и поставщиков, процесс сборки и прошивки на потоке, методика настройки и эксплуатационная документация.</p></div></div>
+    <div class="stage phase"><span class="when">≈ 3–4 мес.</span><div class="what"><h3>Этап II. Пользовательский продукт: бэкенд и панель</h3><p class="muted">Реестр устройств, мониторинг каналов с историей, события и оповещения, удалённые действия, отчёты о доступности. Много точек интеграции: ядро и lxd на роутерах, модемы, коммутаторы, узлы агрегации, системы заказчика (Telegram, почта, webhook, Prometheus, Zabbix). Может начинаться параллельно с шагами I.3–I.4.</p></div></div>
+    <div class="stage phase"><span class="when">≈ 7–8 мес.</span><div class="what"><h3>Этап III. Разработка протокола пакетной агрегации</h3><p class="muted">Режим 2 поверх тех же каналов: пакеты одного соединения расходятся по всем каналам и собираются на узле по номерам, скорость одного соединения становится суммой каналов. Решение о старте принимается по итогам коммерческой эксплуатации.</p></div></div>
+    <div class="stage phase"><span class="when">по проекту</span><div class="what"><h3>Потенциал роста: суда</h3><p class="muted">Отдельный класс потребителей со своей экономикой, в финансовую модель не входит. По маршруту судно проходит зоны многих операторов, поэтому в комплекте до 20 SIM-карт и переключение между ними по зоне покрытия. В море связь идёт через спутник: движок включает его как ещё один канал в общий круг, и для судна это один управляемый канал до ЦОД. Монтаж на судне в 2–3 раза дороже, чем на берегу. Цена — от 1 млн ₽ в месяц, пусконаладка по проекту. Доработки: переключение SIM по зоне покрытия, учёт роуминга, спутниковый канал.</p></div></div>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Разработка</th><th class="r">чел.-мес.</th><th class="r">Сумма, ₽</th></tr></thead>
+      <tbody>
+        <tr class="ph"><td colspan="3">Этап I. Инженерный путь</td></tr>
+        <tr><td>Два системных программиста-инженера: движок маршрутизации, доработки ядра, клиент на OpenWrt, скрипты роутера, узлы агрегации, интеграция оборудования, методика настройки<small>2 человека × 8 месяцев · 8 000 ₽ в час</small></td><td class="r">16</td><td class="r">20 480 000</td></tr>
+        <tr><td>Руководитель проекта: архитектура, испытания, работа с заказчиком и операторами<small>1 человек × 8 месяцев · 8 000 ₽ в час</small></td><td class="r">8</td><td class="r">10 240 000</td></tr>
+        <tr><td>Прочие специалисты команды: системный администратор, дизайнер, тестировщики, монтажник и пусконаладчик, технический писатель, фронтенд- и бэкенд-разработчики<small>1 ставка × 8 месяцев, роли закрываются по мере задач · 5 000 ₽ в час</small></td><td class="r">8</td><td class="r">6 400 000</td></tr>
+        <tr><td>Оборудование стендов, SIM-карты, полевые испытания</td><td class="r"></td><td class="r">800 000</td></tr>
+        <tr class="sum"><td>Итого этап I</td><td class="r">32</td><td class="r">37 920 000</td></tr>
+        <tr class="ph"><td colspan="3">Этап II. Пользовательский продукт</td></tr>
+        <tr><td>Архитектура продукта и интеграция с ядром маршрутизации: ядро и lxd на роутерах, модемы, коммутаторы, узлы агрегации, сбор метрик и событий, удалённые действия<small>системные программисты-инженеры, ≈ 400 часов · 8 000 ₽ в час</small></td><td class="r">2,5</td><td class="r">3 200 000</td></tr>
+        <tr><td>Фронтенд и бэкенд панели: реестр устройств, мониторинг и история каналов, события и оповещения, отчёты, интеграции с системами заказчика, дизайн интерфейса<small>прочие специалисты команды, ≈ 800 часов · 5 000 ₽ в час</small></td><td class="r">5</td><td class="r">4 000 000</td></tr>
+        <tr class="sum"><td>Итого этап II</td><td class="r">7,5</td><td class="r">7 200 000</td></tr>
+        <tr class="sum total"><td>Итого разработка, этапы I и II</td><td class="r">39,5</td><td class="r">45 120 000</td></tr>
+        <tr class="ph"><td colspan="3">Этап III. Протокол пакетной агрегации, по решению заказчика</td></tr>
+        <tr><td>Два системных программиста-инженера: протокол пакетной агрегации (режим 2), нумерация и сборка пакетов на узле, планировщик с учётом задержки и потерь каналов<small>2 человека × 7,5 месяца · 8 000 ₽ в час</small></td><td class="r">15</td><td class="r">19 200 000</td></tr>
+        <tr><td>Руководитель проекта: архитектура протокола, испытания, работа с заказчиком и операторами<small>1 человек × 7,5 месяца · 8 000 ₽ в час</small></td><td class="r">7,5</td><td class="r">9 600 000</td></tr>
+        <tr><td>Прочие специалисты команды: тестирование на сотовых сетях, стенды, полевые испытания у операторов<small>1 ставка × 7,5 месяца · 5 000 ₽ в час</small></td><td class="r">7,5</td><td class="r">6 000 000</td></tr>
+        <tr class="sum"><td>Итого этап III</td><td class="r">от 30</td><td class="r">от 34 800 000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap col">Оплата каждого этапа: 60 % предоплата перед началом этапа, 40 % после его приёмки. Отчёт шага I.1 содержит замеры, по которым заказчик решает, продолжать ли работу. Этап II заказывается отдельно и может начинаться параллельно с завершением этапа I.</p>
+  <div class="col stack">
+    <h3>Права и сопровождение</h3>
+  </div>
+  <ul class="col">
+    <li>Движок маршрутизации трафика на роутерах и узлах агрегации — открытое ПО под лицензией GPLv3. Заказчик получает адаптированную под проект сборку и исходный код в объёме, который требует лицензия. Адаптация, сборка и поставка входят в стоимость этапов.</li>
+    <li>Панель и бэкенд этапа II делятся на две части. Ядро панели (реестр устройств, мониторинг каналов, события, удалённые действия) — продукт команды, исключительные права на него остаются у команды. Заказчик получает на ядро бессрочную неисключительную лицензию без ограничения числа объектов и без доплат.</li>
+    <li>Всё, что сделано только под заказчика: интеграции с его системами, фирменное оформление, его отчёты, — переходит к заказчику в исключительное право.</li>
+    <li>Исходный код ядра панели депонируется: если команда прекратит сопровождение, код переходит заказчику.</li>
+    <li>Общие скрипты роутера (сторож модемов со сбросом PoE, переключение SIM, обновление прошивки и подобные) остаются у команды, заказчик получает на них бессрочную неисключительную лицензию. Скрипты, сделанные под заказчика, методика настройки и эксплуатационная документация переходят к заказчику в исключительное право.</li>
+    <li>Сопровождение после запуска — по отдельному договору: обновления движка и панели, адаптация под новые модемы и изменения в сетях операторов, исправление ошибок, третья линия поддержки. Первую и вторую линию ведут инженеры заказчика.</li>
+  </ul>
+</section>
+
+<section class="stack" id="fm">
+  <h2><span class="n">08</span>Финансовая модель и юнит-экономика</h2>
+  <p class="col">Юнит-экономика проекта на пять лет. Четыре шага ввода: тарифы и цены для клиента, расходы на объект, темп продаж и ЦОД, вложения в разработку. Ниже — результат простыми словами, экономика одного объекта по тарифам, таблица по годам и графики. Цифры по умолчанию стартовые; измените любое поле, и всё пересчитается.</p>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Тариф</th><th>Для кого</th><th>Состав</th><th class="r">Абонентская плата, ₽ в месяц</th></tr></thead>
+      <tbody>
+        <tr><td>Базовый</td><td>Объекты с нормальным покрытием сотовой сети</td><td>3 канала, мониторинг, реакция в рабочее время, замена из ЗИП в течение нескольких дней</td><td class="r">от 150 000</td></tr>
+        <tr><td>Промышленный</td><td>Заводы, больницы, критичные площадки</td><td>4–5 каналов, дежурство 24/7, восстановление за 4–8 ч, ЗИП на объекте, ежемесячный отчёт о доступности</td><td class="r">400 000 – 800 000</td></tr>
+        <tr><td>Удалённые объекты</td><td>Карьеры, вахты, стройки, объекты за городом</td><td>5 каналов, модемы в уличном исполнении, обслуживание как в промышленном тарифе</td><td class="r">от 1 000 000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="cap col">Инженеры и менеджеры у заказчика уже есть, новых расходов на персонал проект не создаёт, поэтому в модель они не входят. Суда в модель не входят: это отдельное направление роста, см. раздел 07.</p>
+
+  <form class="fm" id="fm-form" novalidate autocomplete="off">
+    <div class="fm-step" role="group" aria-labelledby="fm-h1">
+      <h3 id="fm-h1"><span class="fm-n">08.1</span>Цены для клиента</h3>
+      <p class="fm-hint">Что клиент платит за один объект по каждому тарифу и какую долю продаж даёт тариф. Доли нормируются к 100 %.</p>
+      <div class="fm-mxw">
+        <table class="fm-mx">
+          <thead><tr><th></th><th>Базовый</th><th>Промышленный</th><th>Удалённые объекты</th></tr></thead>
+          <tbody>
+          <tr><th scope="row">Абонентская плата в месяц</th><td><input id="fm-fee-b" data-u="₽/мес" type="number" min="0" step="10000" value="150000" aria-label="Базовый: Абонентская плата, ₽ в месяц"></td><td><input id="fm-fee-i" data-u="₽/мес" type="number" min="0" step="10000" value="400000" aria-label="Промышленный: Абонентская плата, ₽ в месяц"></td><td><input id="fm-fee-r" data-u="₽/мес" type="number" min="0" step="10000" value="1000000" aria-label="Удалённые объекты: Абонентская плата, ₽ в месяц"></td></tr>
+          <tr><th scope="row">Пусконаладка, разово</th><td><input id="fm-setup-b" data-u="₽" type="number" min="0" step="10000" value="400000" aria-label="Базовый: Пусконаладка, ₽ разово"></td><td><input id="fm-setup-i" data-u="₽" type="number" min="0" step="10000" value="600000" aria-label="Промышленный: Пусконаладка, ₽ разово"></td><td><input id="fm-setup-r" data-u="₽" type="number" min="0" step="10000" value="800000" aria-label="Удалённые объекты: Пусконаладка, ₽ разово"></td></tr>
+          <tr><th scope="row">Доля в продажах</th><td><input id="fm-share-b" data-u="%" type="number" min="0" max="100" step="5" value="60" aria-label="Базовый: Доля в продажах, %"></td><td><input id="fm-share-i" data-u="%" type="number" min="0" max="100" step="5" value="30" aria-label="Промышленный: Доля в продажах, %"></td><td><input id="fm-share-r" data-u="%" type="number" min="0" max="100" step="5" value="10" aria-label="Удалённые объекты: Доля в продажах, %"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fm-derived" id="fm-d-price"></p>
+    </div>
+
+    <div class="fm-step" role="group" aria-labelledby="fm-h2">
+      <h3 id="fm-h2"><span class="fm-n">08.2</span>Себестоимость и расходы на объект</h3>
+      <p class="fm-hint">Что мы тратим на объект при подключении и каждый месяц.</p>
+      <div class="fm-mxw">
+        <table class="fm-mx">
+          <thead><tr><th></th><th>Базовый</th><th>Промышленный</th><th>Удалённые объекты</th></tr></thead>
+          <tbody>
+          <tr><th scope="row">Комплект оборудования<small>по розничным ценам</small></th><td><input id="fm-kit-b" data-u="₽" type="number" min="0" step="1000" value="273700" aria-label="Базовый: Комплект оборудования, ₽"></td><td><input id="fm-kit-i" data-u="₽" type="number" min="0" step="1000" value="358200" aria-label="Промышленный: Комплект оборудования, ₽"></td><td><input id="fm-kit-r" data-u="₽" type="number" min="0" step="1000" value="420000" aria-label="Удалённые объекты: Комплект оборудования, ₽"></td></tr>
+          <tr><th scope="row">SIM-карты и трафик в месяц</th><td><input id="fm-sim-b" data-u="₽/мес" type="number" min="0" step="500" value="4500" aria-label="Базовый: SIM-карты и трафик, ₽ в месяц"></td><td><input id="fm-sim-i" data-u="₽/мес" type="number" min="0" step="500" value="7500" aria-label="Промышленный: SIM-карты и трафик, ₽ в месяц"></td><td><input id="fm-sim-r" data-u="₽/мес" type="number" min="0" step="500" value="10000" aria-label="Удалённые объекты: SIM-карты и трафик, ₽ в месяц"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fm-mxw">
+        <table class="fm-mx">
+          <thead><tr><th>Для всех тарифов</th><th></th><th></th><th></th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><label for="fm-kitCut">Снижение цены комплекта после подбора поставщиков</label></th><td><input id="fm-kitCut" data-u="%" type="number" min="0" max="100" step="1" value="30"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-kitFrom">Снижение действует начиная с комплекта №</label></th><td><input id="fm-kitFrom" type="number" min="1" step="1" value="10"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-install">Выезд и монтаж</label></th><td><input id="fm-install" data-u="₽" type="number" min="0" step="5000" value="50000"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-costPct">Операционные расходы зрелого бизнеса, доля выручки<small>персонал, выезды, замена оборудования, продажи; вместе с SIM и ЦОД; от 10 до 40 %</small></label></th><td><input id="fm-costPct" data-u="%" type="number" min="10" max="40" step="5" value="30"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-costFrom">Действуют после объектов<small>до этого расходы — только SIM и ЦОД</small></label></th><td><input id="fm-costFrom" data-u="шт." type="number" min="0" step="10" value="100"></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fm-derived" id="fm-d-cost"></p>
+    </div>
+
+    <div class="fm-step" role="group" aria-labelledby="fm-h3">
+      <h3 id="fm-h3"><span class="fm-n">08.3</span>Темпы продаж и ЦОД</h3>
+      <p class="fm-hint">Сколько объектов подключаем и сколько серверов для них нужно в двух ЦОД.</p>
+      <div class="fm-mxw">
+        <table class="fm-mx">
+          <thead><tr><th>Продажи</th><th></th><th></th><th></th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><label for="fm-q1">Новых объектов в первом квартале продаж</label></th><td><input id="fm-q1" data-u="шт." type="number" min="0" step="1" value="15"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-growth">Рост продаж за квартал<small>каждый следующий квартал продаём на столько больше</small></label></th><td><input id="fm-growth" data-u="%" type="number" min="0" step="1" value="15"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-start">Начало продаж, месяц проекта<small>с этого месяца идут продажи и ставятся серверы</small></label></th><td><input id="fm-start" data-u="мес." type="number" min="1" max="60" step="1" value="9"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-churn">Отток объектов в год<small>доля объектов, которые отключаются за год</small></label></th><td><input id="fm-churn" data-u="%" type="number" min="0" max="100" step="1" value="5"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-cap">Ёмкость рынка<small>продажи затухают по мере насыщения: база приближается к этому числу и не превышает его</small></label></th><td><input id="fm-cap" data-u="шт." type="number" min="0" step="10" value="400"></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fm-mxw">
+        <table class="fm-mx">
+          <thead><tr><th>ЦОД</th><th></th><th></th><th></th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><label for="fm-perServer">Подключений на сервер в каждом ЦОД<small>серверы ставятся парами: по одному в каждом ЦОД</small></label></th><td><input id="fm-perServer" data-u="шт." type="number" min="1" step="10" value="100"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-server">Сервер</label></th><td><input id="fm-server" data-u="₽" type="number" min="0" step="100000" value="1800000"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-srvOpex">Размещение и канал на сервер в месяц</label></th><td><input id="fm-srvOpex" data-u="₽/мес" type="number" min="0" step="10000" value="270000"></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fm-derived" id="fm-d-ops"></p>
+    </div>
+
+    <div class="fm-step" role="group" aria-labelledby="fm-h4">
+      <h3 id="fm-h4"><span class="fm-n">08.4</span>Фундаментальные вложения в разработку</h3>
+      <p class="fm-hint">Этапы I и II из раздела 07 плюс резерв на непредвиденное. Оплата по условиям раздела 07: 60 % перед началом этапа, 40 % после приёмки; график платежей фиксирован. Этап III в модель не входит.</p>
+      <div class="fm-mxw">
+        <table class="fm-mx">
+          <thead><tr><th>Этапы I и II</th><th></th><th></th><th></th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><label for="fm-rnd1">Этап I<small>с 1-го по 8-й месяц проекта</small></label></th><td><input id="fm-rnd1" data-u="₽" type="number" min="0" step="1000000" value="37920000"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-rnd2">Этап II<small>с 6-го по 9-й месяц проекта</small></label></th><td><input id="fm-rnd2" data-u="₽" type="number" min="0" step="1000000" value="7200000"></td><td></td><td></td></tr>
+            <tr><th scope="row"><label for="fm-reserve">Резерв на разработку<small>добавляется к сумме этапов</small></label></th><td><input id="fm-reserve" data-u="%" type="number" min="0" step="5" value="20"></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fm-derived fm-total" id="fm-d-rnd"></p>
+    </div>
+  </form>
+
+  <div class="fm-res" aria-live="polite">
+    <div class="fm-hero">
+      <span class="label">Результат</span>
+      <p class="fm-lead" id="fm-r-lead"></p>
+      <p class="fm-when" id="fm-r-when"></p>
+    </div>
+
+    <div class="fm-facts">
+      <div class="fm-fact">
+        <span class="label">Пиковая потребность в деньгах</span>
+        <span class="v" id="fm-r-need"></span>
+        <span class="k" id="fm-r-need-n"></span>
+      </div>
+      <div class="fm-fact">
+        <span class="label" id="fm-r-after-h">Через год после окупаемости</span>
+        <dl class="fm-dl" id="fm-r-after"></dl>
+      </div>
+      <div class="fm-fact">
+        <span class="label">Один объект в среднем по тарифам</span>
+        <span class="v" id="fm-r-unit"></span>
+        <span class="k" id="fm-r-unit-n"></span>
+        <span class="v v2" id="fm-r-once"></span>
+        <span class="k" id="fm-r-once-n"></span>
+      </div>
+    </div>
+
+    <div class="tbl">
+      <table id="fm-unit">
+        <thead><tr><th>Один объект в месяц, ₽</th><th class="r">Базовый</th><th class="r">Промышленный</th><th class="r">Удалённые</th><th class="r">В среднем</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="tbl">
+      <table id="fm-once">
+        <thead><tr><th>Подключение одного объекта, разово, ₽</th><th class="r">Базовый</th><th class="r">Промышленный</th><th class="r">Удалённые</th><th class="r">В среднем</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="tbl">
+      <table id="fm-years">
+        <thead><tr><th>Показатель</th><th class="r">1 год</th><th class="r">2 года</th><th class="r">3 года</th><th class="r">5 лет</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <figure class="fm-chart">
+    <figcaption class="fm-ch-h"><b>Денежный поток нарастающим итогом, млн ₽</b><span>с начала проекта; ниже нуля — вложения, выше — заработано</span><span class="fm-leg" hidden><i class="cur"></i>по калькулятору <i class="base"></i>рекомендуемые параметры</span></figcaption>
+    <div class="fm-plot"><svg id="fm-cash" viewBox="0 0 900 290" role="img" aria-label="Денежный поток нарастающим итогом по месяцам"></svg><div class="fm-tip" id="fm-tip-cash" hidden></div></div>
+  </figure>
+  <figure class="fm-chart">
+    <figcaption class="fm-ch-h"><b>Подключённых объектов</b><span>на конец месяца</span><span class="fm-leg" hidden><i class="cur"></i>по калькулятору <i class="base"></i>рекомендуемые параметры</span></figcaption>
+    <div class="fm-plot"><svg id="fm-objs" viewBox="0 0 900 230" role="img" aria-label="Число подключённых объектов по месяцам"></svg><div class="fm-tip" id="fm-tip-objs" hidden></div></div>
+  </figure>
+  <p class="cap col">Модель без налога на прибыль и без стоимости денег во времени; суммы с НДС, как введены. Каждый объект считается отдельным клиентом. Продажи растут по кварталам и равномерно распределены по месяцам квартала; отток списывается ежемесячно. Плановые продажи умножаются на долю ещё свободного рынка, поэтому они затухают по мере насыщения, и база асимптотически приближается к ёмкости рынка. После заданного числа проданных объектов операционные расходы составляют не меньше заданной доли выручки. Тарифы продаются в заданных долях; цены и расходы модели — средние по этим долям. Серверы ставятся парами (по одному в каждом ЦОД) с началом продаж и докупаются при росте. Персонал заказчика в расходы не входит. Разработка берётся с резервом и оплачивается по условиям раздела 07: этап I — 60 % в 1-м месяце и 40 % в 8-м, этап II — 60 % в 6-м месяце и 40 % в 9-м. Этап III в модель не входит.</p>
+</section>
+
+<section class="stack">
+  <h2><span class="n">09</span>Риски и как мы их снимаем</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Риск</th><th>Что делаем</th></tr></thead>
+      <tbody>
+        <tr><td>Модемы на плате роутера (M.2 или USB внутри корпуса): модуль зависает, и сбросить его можно только перезагрузкой всего роутера; пиковое потребление трёх модемов при передаче просаживает питание платы; модемы и процессор греют друг друга в одном корпусе; радиоизлучение модемов и антенн наводит помехи на процессор, память и порты</td><td>Модемы вынесены на PoE: у каждого свой корпус, питание и охлаждение. Получается гибкая модульная структура: число каналов подбирается под объект (комплекты на 3, 4 или 5 модемов) и меняется добавлением или снятием модема на порту коммутатора, без замены роутера. Зависший модем перезапускается отключением питания на порту коммутатора, роутер и остальные каналы продолжают работать. Модемы с антеннами ставятся там, где лучше сигнал, вдали от роутера. Внешний интерфейс настраивается на коммутаторе (отдельный VLAN на модем), поэтому роутер не привязан к слотам под модемы: можно ставить надёжные проверенные модели. Платы M.2 → Ethernet проходят испытания партии на шаге I.1, держим второго поставщика.</td></tr>
+        <tr><td>Wi-Fi в корпусе роутера: роутер стоит в шкафу или серверной, и покрытие помещения получается слабым; радиомодуль греется вместе с процессором и модемами; перезагрузка или отказ роутера отключает и Wi-Fi; выбор роутера ограничен моделями со встроенным радио нужного класса</td><td>Wi-Fi вынесен в отдельную точку доступа с питанием PoE от коммутатора. Точка ставится там, где нужно покрытие, а роутер остаётся в шкафу. Зависшая точка перезапускается отключением питания на порту коммутатора. При росте объекта добавляются ещё точки на свободные порты. Роутер выбирается по надёжности и производительности маршрутизации, без оглядки на радио, а точка доступа меняется на другую модель с OpenWrt без замены остального комплекта.</td></tr>
+        <tr><td>Нагрев модуля RM520N под длительной нагрузкой</td><td>Радиатор в составе комплекта, прогон 72 ч на стенде.</td></tr>
+        <tr><td>Производительности R5S не хватит на заявленную скорость</td><td>Замер на шаге I.1. Запасной вариант NanoPi R6S без изменения софта.</td></tr>
+        <tr><td>Цены модулей и курс валют</td><td>Цена комплекта фиксируется на шаге I.4, в договоре валютная оговорка.</td></tr>
+        <tr><td>Операторы тарифицируют VPN-трафик отдельно: с марта 2026 года МТС на части тарифов берёт 80–87 ₽ в сутки за использование VPN с лимитом 5 ГБ, то есть до ~2 600 ₽ в месяц на каждую SIM</td><td>SIM комплекта подключаются на корпоративных и M2M-тарифах, условия по трафику фиксируются в договоре с оператором. Транспорт построен на стандартных HTTPS и HTTP/3 (QUIC) и меньше зависит от тарифных правил, привязанных к VPN-протоколам. Это наше преимущество: решения на IPsec, WireGuard и OpenVPN попадают под такие правила напрямую.</td></tr>
+        <tr><td>Операторы ограничивают или ухудшают работу отдельных туннельных протоколов (WireGuard, OpenVPN, IPsec)</td><td>Транспорт работает поверх стандартных HTTPS (TLS 1.3 поверх TCP, порт 443) и HTTP/3 (QUIC поверх UDP, порт 443). Каждый канал постоянно проверяет связь с узлом агрегации. Если на канале ухудшается один вид транспорта, например оператор ограничивает UDP и вместе с ним QUIC, канал автоматически переходит на HTTPS поверх TCP. Остальные каналы это не затрагивает. Полевые испытания у трёх операторов на шаге I.1.</td></tr>
+        <tr><td>Поддержка OpenWrt зависит от ревизии коммутатора</td><td>Закупка только подтверждённых ревизий (Zyxel GS1900 v1/v2, D-Link DGS-1210 нужной ревизии), проверка при входном контроле.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="stack">
+  <h2><span class="n">10</span>Комментарии к проекту</h2>
+  <div class="col stack">
+    <p><b>Скорость объекта.</b> Соединения объекта распределяются по всем каналам сразу, поэтому общая скорость объекта — сумма скоростей каналов: пользователи, браузеры и приложения одновременно открывают десятки соединений. Отдельное соединение, например скачивание одного файла в один поток, идёт со скоростью своего канала.</p>
+    <p><b>LTE.</b> В реальных условиях один канал LTE с агрегацией несущих обычно даёт 50–250 Мбит/с, в зависимости от оператора, загрузки соты и уровня сигнала. Три канала вместе — порядка 300–800 Мбит/с. Модуль Quectel RM520N-GL поддерживает LTE до категории 20 и берёт от сети LTE максимум возможного.</p>
+    <p><b>5G.</b> Те же модули работают в сетях 5G, в том числе в диапазоне 4,4–5 ГГц (n79), который в России планируется под 5G. По мере запуска 5G у операторов скорость каналов вырастет без замены оборудования, и три канала вместе смогут дать больше 1 Гбит/с.</p>
+    <p><b>«До 1 Гбит/с».</b> Гигабит на объекте обеспечивает основной Ethernet. Сотовые каналы на LTE дают в сумме меньше, на 5G — до гигабита и выше.</p>
+    <div class="stack" style="gap:6px">
+      <p><b>Почему L3, а не L2.</b> Для этой задачи L2 ничего не даёт, только мешает:</p>
+      <ul>
+        <li>Трафик всё равно выходит в интернет с адреса узла. L2 до сервера ничего к этому не добавляет.</li>
+        <li>Широковещательный трафик. На сотнях клиентов пришлось бы держать отдельный мост на каждого клиента, иначе ARP, DHCP и широковещательный трафик одного объекта приходят к остальным.</li>
+        <li>Накладные расходы. VXLAN добавляет около 50 байт, WireGuard ещё около 60. На сотовых каналах с MTU около 1400–1430 это сразу проблемы с фрагментацией.</li>
+        <li>Распределение по каналам усложняется: соединения приходится выделять уже внутри Ethernet-кадров.</li>
+      </ul>
+      <p>L2 имеет смысл, только если заказчик хочет включить сеть объекта прямо в свой сегмент: тот же широковещательный домен, свои адреса, не-IP протоколы. Такая задача решается отдельно от основного трафика: через отдельное управляющее соединение до сети заказчика, без резервирования и распределения по каналам.</p>
+    </div>
+  </div>
+</section>
+
+<section class="stack">
+  <h2><span class="n">11</span>Вопросы к заказчику</h2>
+  <ul class="col">
+    <li><b>Тип объектов.</b> Только стационарные объекты или ещё и транспорт? От этого зависит монтаж модемов.</li>
+    <li><b>Требования к отказоустойчивости.</b> Допустимое время переключения, требования к SLA, мониторинг на стороне заказчика.</li>
+    <li><b>Сертификация и происхождение оборудования.</b> Есть ли требования к реестрам и сертификатам.</li>
+    <li><b>Ожидания продаж и финансовая модель.</b> Сколько объектов заказчик планирует подключать по кварталам, по какой цене для клиента, какой отток и срок окупаемости закладывает. По этим цифрам уточним модель в разделе 08.</li>
+  </ul>
+</section>
+
+
+<footer class="foot">
+  <span>Цены оборудования и эксплуатации ориентировочные, с НДС; уточняются по результатам шага I.1 и запросов поставщикам.</span>
+</footer>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+var fig=document.getElementById('sim');if(!fig)return;
+var NS='http://www.w3.org/2000/svg';
+var RM=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+function E(tag,a,p){var e=document.createElementNS(NS,tag);if(a){for(var k in a)e.setAttribute(k,a[k]);}if(p)p.appendChild(e);return e;}
+function T(txt,a,p){var e=E('text',a,p);e.textContent=txt;return e;}
+function $(id){return document.getElementById(id);}
+var dyn=fig.querySelector('.sim-dyn');
+
+/* geometry */
+var Y={1:135,2:205,3:275},DCY={1:135,2:280};
+function mkPath(pts){var cum=[0];for(var i=1;i<pts.length;i++){var dx=pts[i][0]-pts[i-1][0],dy=pts[i][1]-pts[i-1][1];cum.push(cum[i-1]+Math.sqrt(dx*dx+dy*dy));}return {pts:pts,cum:cum,L:cum[cum.length-1]};}
+function posAt(P,f){f=Math.max(0,Math.min(1,f));var d=f*P.L;for(var i=1;i<P.pts.length;i++){if(d<=P.cum[i]){var a=P.pts[i-1],b=P.pts[i],s=P.cum[i]-P.cum[i-1],k=s?(d-P.cum[i-1])/s:0;return [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k];}}var l=P.pts[P.pts.length-1];return [l[0],l[1]];}
+function fr(P,i){return P.cum[i]/P.L;}
+var PC={},PE={};
+[1,2].forEach(function(d){
+  [1,2,3].forEach(function(c){PC[c]=PC[c]||{};PC[c][d]=mkPath([[49,205],[64,205],[214,Y[c]],[578,Y[c]],[578,DCY[d]],[620,DCY[d]],[770,DCY[d]],[806,205],[822,205]]);});
+  PE[d]=mkPath([[49,205],[64,205],[139,330],[139,392],[578,392],[578,DCY[d]],[620,DCY[d]],[770,DCY[d]],[806,205],[822,205]]);
+});
+var TT_CELL=2.6,TT_ETH=2.8,GAP=0.55;
+var IP1='203.0.113.10',IP2='198.51.100.20';
+/* channel speeds and the weights derived from them */
+var SPEED={1:120,2:80,3:60},W={1:6,2:4,3:3};
+
+function inIv(list,t){for(var i=0;i<(list||[]).length;i++){if(t>=list[i][0]&&t<list[i][1])return true;}return false;}
+function series(t0,step,n,life,from){var r=[],L='ABCDEFGHIJKLMNOPQRSTUVWXYZ';for(var i=0;i<n;i++)r.push([L[(from||0)+i],t0+i*step,life]);return r;}
+
+/* ---------- scenarios, played back to back ---------- */
+var SCN=[
+  {key:'eth',title:'Основной Ethernet',dur:18,mode:'eth',ethDown:[[5,11]],
+    arrivals:[['A',0.3,7],['B',1.0,8],['C',1.7,6],['D',2.6,7],['E',3.4,7],['F',6.2,8],['G',6.9,8],['H',7.6,7],['I',8.3,6],['J',11.6,4],['K',12.3,4]],
+    steps:[
+      {t:0,text:'Обычный режим: основной канал — Ethernet провайдера до узла агрегации. Сотовые каналы в резерве. Внешние сайты видят адрес узла. Нажмите «Пуск»: сценарии пойдут один за другим.'},
+      {t:5,text:'Ethernet пропал: проверка канала до узла не проходит. Соединения через него рвутся, приложения переподключаются.'},
+      {t:5.5,text:'Новые соединения идут по сотовым каналам до того же узла, по взвешенному кругу. Адрес выхода не меняется: внешние сайты видят тот же адрес узла.'},
+      {t:11,text:'Ethernet вернулся: новые соединения снова идут по нему. Открытые соединения на сотовых каналах доживают свой срок, их никто не обрывает.'}]},
+  {key:'wrr',title:'Взвешенный круг',dur:13,mode:'cell',
+    arrivals:series(0.3,0.42,13,8.5),
+    steps:[
+      {t:0,text:'Режим агрегации: все три сотовых канала работают одновременно. Скорость у каналов разная: 120, 80 и 60 Мбит/с.'},
+      {t:0.3,text:'Новые соединения раздаются по взвешенному кругу: быстрый канал получает их чаще, медленный реже. Порядок перемешан: 1, 2, 3, 1, 2, 1, 3, …'},
+      {t:3.6,text:'Каждое соединение целиком живёт в одном канале, поэтому порядок пакетов сохраняется сам и узлу не нужно ничего собирать.'},
+      {t:5.8,text:'Из каждых 13 соединений канал 1 получил 6, канал 2 — 4, канал 3 — 3, по скорости каналов. Скорость движок оценивает сам, по трафику, который канал реально пропускал.'}]},
+  {key:'down',title:'Пропал канал',dur:17,mode:'cell',down:{2:[[6,11.5]]},
+    arrivals:series(0.3,0.6,7,9).concat(series(7.2,0.6,4,5,7)).concat(series(12.0,0.6,3,3.5,11)),
+    steps:[
+      {t:0,text:'Три канала работают, соединения расходятся по взвешенному кругу.'},
+      {t:6,text:'Оператор канала 2 перестал отвечать: проверка через канал до узла не проходит. Канал выпадает из круга, его открытые соединения рвутся (красный ×).'},
+      {t:6.5,text:'Приложения сразу переподключаются, и новые соединения получают живые каналы 1 и 3. Соединения на других каналах не затронуты.'},
+      {t:7.2,text:'Пока канал 2 недоступен, соединения делятся между каналами 1 и 3, тоже по их скорости.'},
+      {t:11.5,text:'Связь через канал 2 восстановилась. Он возвращается в круг, и новые соединения снова расходятся по трём каналам.'}]},
+  {key:'hang',title:'Завис модем',dur:19,mode:'cell',down:{3:[[6.5,12.5]]},hang:{ch:3,from:4.5,to:6.5,poe:0.8},
+    arrivals:series(0.3,0.5,8,10).concat(series(8.0,0.7,2,5,8)).concat(series(13.0,0.6,3,4,10)),
+    steps:[
+      {t:0,text:'Три канала работают.'},
+      {t:4.5,text:'Модем 3 завис: пакеты по каналу 3 перестают проходить и встают на линии.'},
+      {t:6.5,text:'Проверка канала не прошла. Роутер исключает канал 3 из круга и через управляемый коммутатор выключает питание PoE на порту модема. Соединения канала 3 рвутся и переподключаются через каналы 1 и 2.'},
+      {t:7.3,text:'Питание включено, модем загружается и регистрируется в сети. Выезд инженера не нужен.'},
+      {t:12.5,text:'Канал 3 снова проходит проверку и возвращается в круг.'}]},
+  {key:'dc',title:'Отказ ЦОД',dur:16,mode:'cell',dcFail:6,dcSwitch:6.6,
+    arrivals:series(0.3,0.6,7,8).concat(series(8.6,0.6,4,5,7)),
+    steps:[
+      {t:0,text:'Клиент работает через ЦОД 1 и держит готовый резерв в ЦОД 2. Адрес выхода — адрес узла в ЦОД 1.'},
+      {t:6,text:'ЦОД 1 недоступен: каналы не проходят проверку до узла. Открытые соединения рвутся.'},
+      {t:6.6,text:'Движок переводит каналы на узел в ЦОД 2. Приложения переподключаются, новые соединения идут через ЦОД 2.'},
+      {t:8.6,text:'Внешние сайты теперь видят адрес ЦОД 2: у каждого ЦОД свой выходной адрес. На этом показ закончен.'}]}
+];
+
+/* ---------- connection-level simulation, smooth weighted round-robin ---------- */
+function simulate(s){
+  var alive=function(c,t){return !inIv((s.down||{})[c],t);};
+  var ethUp=function(t){return !inIv(s.ethDown,t);};
+  var activeDC=function(t){return s.dcSwitch&&t>=s.dcSwitch?2:1;};
+  var cellOk=function(t){return !(s.dcFail&&t>=s.dcFail&&t<s.dcSwitch);};
+  var cur={1:0,2:0,3:0},assigns=[],conns=[];
+  function wrr(state,t){
+    var tot=0,best=0;[1,2,3].forEach(function(c){if(alive(c,t)){state[c]+=W[c];tot+=W[c];if(!best||state[c]>state[best])best=c;}});
+    if(best)state[best]-=tot;return best;
+  }
+  function pick(t){
+    if(s.mode==='eth'&&ethUp(t))return {kind:'eth',dc:activeDC(t)};
+    if(!cellOk(t))return null;
+    var c=wrr(cur,t);if(!c)return null;
+    assigns.push({t:t,ch:c,state:{1:cur[1],2:cur[2],3:cur[3]}});
+    return {kind:'cell',ch:c,dc:activeDC(t)};
+  }
+  function breakAt(c){
+    var b=[];
+    if(c.route.kind==='cell'){((s.down||{})[c.route.ch]||[]).forEach(function(iv){if(iv[0]>c.t0&&iv[0]<c.t1)b.push(iv[0]);});}
+    else (s.ethDown||[]).forEach(function(iv){if(iv[0]>c.t0&&iv[0]<c.t1)b.push(iv[0]);});
+    if(s.dcFail&&c.route.dc===1&&s.dcFail>c.t0&&s.dcFail<c.t1)b.push(s.dcFail);
+    return b.length?Math.min.apply(null,b):null;
+  }
+  var q=s.arrivals.map(function(a){return {label:a[0],t:a[1],life:a[2]};});
+  while(q.length){
+    q.sort(function(a,b){return a.t-b.t;});var it=q.shift(),t=it.t,r=null,g=0;
+    while(!r&&g<300){r=pick(t);if(!r)t+=0.1;g++;}
+    if(!r)continue;
+    var c={label:it.label,t0:t,t1:t+it.life,route:r,tb:null};
+    var tb=breakAt(c);
+    if(tb!==null){c.tb=tb;q.push({label:it.label+'′',t:tb+0.5,life:Math.max(1.6,c.t1-tb)});}
+    conns.push(c);
+  }
+  /* which channel the next connection would get at time t */
+  function next(t){
+    var st={1:0,2:0,3:0};assigns.forEach(function(a){if(a.t<=t)st=a.state;});
+    return wrr({1:st[1],2:st[2],3:st[3]},t);
+  }
+  return {conns:conns,alive:alive,ethUp:ethUp,activeDC:activeDC,cellOk:cellOk,next:next};
+}
+
+/* ---------- drawing ---------- */
+function tok(cls,label,p){var g=E('g',{'class':'tok '+cls,transform:'translate('+p[0].toFixed(1)+','+p[1].toFixed(1)+')'},dyn);E('circle',{r:8},g);T(label,{'text-anchor':'middle',y:'3.4'},g);}
+function setText(id,txt,cls){var e=$(id);e.textContent=txt;if(cls!==undefined)e.setAttribute('class',cls);}
+function brk(x,y,label){T('×',{x:x,y:y+6,'text-anchor':'middle','class':'brk'},dyn);if(label)T(label+' оборвано',{x:x+10,y:y-10,'class':'brk-l'},dyn);}
+var ST='sim-t-s sim-t-mono ';
+
+function render(s,S,t){
+  dyn.textContent='';
+  var ethIdle=s.mode==='eth'&&S.ethUp(t);
+  [1,2,3].forEach(function(c){
+    var st='работает',cls=ST+'sim-t-ok',dead=!S.alive(c,t);
+    if(s.hang&&s.hang.ch===c){var h=s.hang,up=s.down[c][0][1];
+      if(t>=h.from&&t<h.to){st='не отвечает';cls=ST+'sim-t-warn';}
+      else if(t>=h.to&&t<h.to+h.poe){st='PoE выключено';cls=ST+'sim-t-bad';}
+      else if(t>=h.to+h.poe&&t<up){st='загрузка модема';cls=ST+'sim-t-warn';}}
+    if(dead&&st==='работает'){st='нет связи';cls=ST+'sim-t-bad';}
+    if(s.dcFail&&t>=s.dcFail&&t<s.dcSwitch){st='нет связи с узлом';cls=ST+'sim-t-bad';dead=true;}
+    if(ethIdle&&!dead){st='в резерве';cls=ST+'sim-t-m';}
+    setText('sim-st'+c,st,cls);
+    $('sim-ch'+c).setAttribute('class','sim-ch c'+c+(dead?' dead':''));
+    var n=S.conns.filter(function(x){return x.route.kind==='cell'&&x.route.ch===c&&t>=x.t0&&t<(x.tb!==null?x.tb:x.t1);}).length;
+    setText('sim-n'+c,SPEED[c]+' Мбит/с · соединений: '+n);
+  });
+  var dc=S.activeDC(t),dc1dead=s.dcFail&&t>=s.dcFail;
+  $('sim-dc1').setAttribute('class',dc1dead?'sim-dead':(dc===1?'sim-box-a':'sim-box sim-dash'));
+  $('sim-dc2').setAttribute('class',dc===2?'sim-box-a':'sim-box sim-dash');
+  setText('sim-dc1-st',dc1dead?'недоступен':(dc===1?'основной · работает':'резерв'),ST+(dc1dead?'sim-t-bad':(dc===1?'sim-t-ok':'sim-t-m')));
+  setText('sim-dc2-st',dc===2?'основной · работает':'резерв · канал готов',ST+(dc===2?'sim-t-ok':'sim-t-m'));
+  ['l','o'].forEach(function(k){
+    $('sim-'+k+'-dc1').setAttribute('class','sim-ln '+(dc===1&&!dc1dead?'on':'off'));
+    $('sim-'+k+'-dc2').setAttribute('class','sim-ln '+(dc===2?'on':'off'));});
+  var eUp=S.ethUp(t);
+  if(s.mode==='eth'){$('sim-eth').setAttribute('class','sim-eth '+(eUp?'on':'dead'));setText('sim-eth-st',eUp?'работает · основной':'нет связи',ST+(eUp?'sim-t-ok':'sim-t-bad'));}
+  else{$('sim-eth').setAttribute('class','sim-eth idle');setText('sim-eth-st','режим агрегации: работают сотовые каналы',ST+'sim-t-m');}
+  setText('sim-exit-k','адрес выхода');setText('sim-exit',dc===2?IP2:IP1);setText('sim-exit-2',dc===2?'узел ЦОД 2':'узел ЦОД 1');
+  if(ethIdle){setText('sim-ptr-k','новые соединения');setText('sim-ptr','→ Ethernet');}
+  else if(!S.cellOk(t)){setText('sim-ptr-k','следующий канал');setText('sim-ptr','ждём узел…');}
+  else{var nx=S.next(t);setText('sim-ptr-k','следующий канал');setText('sim-ptr',nx?'→ канал '+nx:'—');}
+  S.conns.forEach(function(c){
+    var end=c.tb!==null?c.tb:c.t1,eth=c.route.kind==='eth';
+    var P=eth?PE[c.route.dc]:PC[c.route.ch][c.route.dc],TT=eth?TT_ETH:TT_CELL,cls=eth?'eth':'c'+c.route.ch;
+    for(var te=c.t0+0.05;te<end;te+=GAP){
+      if(t<te)break;
+      if(c.tb!==null&&t>=c.tb)break;
+      var tt=t;
+      if(s.hang&&!eth&&c.route.ch===s.hang.ch&&te<s.hang.to){
+        var ts=te+fr(P,2)*TT,mid=te+(fr(P,2)+fr(P,3))/2*TT;
+        if(mid>=s.hang.from){var sT=Math.min(mid,Math.max(s.hang.from,ts));if(tt>sT)tt=sT;}
+      }
+      var f=(tt-te)/TT;if(f>1)continue;
+      tok(cls,c.label,posAt(P,f));
+    }
+    if(c.tb!==null&&t>=c.tb&&t<c.tb+1.6){
+      if(s.dcFail&&c.tb===s.dcFail)brk(606,DCY[1],c.label);
+      else if(eth)brk(139,362,c.label);
+      else brk(232,Y[c.route.ch]+20,c.label);
+    }
+  });
+}
+
+/* ---------- one timeline for all scenarios ---------- */
+var GAPS=0.8,off=0,STEPS=[];
+SCN.forEach(function(s,k){s.sim=simulate(s);s.off=off;s.steps.forEach(function(st){STEPS.push({t:off+st.t,text:st.text,k:k});});off+=s.dur+GAPS;});
+var DUR=off-GAPS;
+function sceneAt(T){var k=0;for(var i=0;i<SCN.length;i++){if(T>=SCN[i].off-1e-6)k=i;}return k;}
+
+/* ---------- player (transport controls as in the bond overview) ---------- */
+function pad2(n){return n<10?'0'+n:String(n);}
+var play=fig.querySelector('[data-act="play"]'),reset=fig.querySelector('[data-act="reset"]'),rng=fig.querySelector('input[type=range]');
+var stepEl=fig.querySelector('.step'),stepN=fig.querySelector('.stepn'),clock=fig.querySelector('.clock');
+var tabs=[].slice.call(fig.querySelectorAll('.sim-tabs button'));
+var t=0,on=false,last=0,spd=1;
+rng.min='0';rng.max=String(Math.round(DUR*100));rng.step='1';
+function idx(){var i=0;for(var j=0;j<STEPS.length;j++){if(STEPS[j].t<=t+1e-6)i=j;}return i;}
+function draw(){
+  var k=sceneAt(t),s=SCN[k];render(s,s.sim,Math.min(s.dur,Math.max(0,t-s.off)));
+  rng.value=String(Math.round(t*100));
+  var i=idx();stepEl.textContent=STEPS[i].text;
+  stepN.textContent='Сценарий '+(k+1)+'/'+SCN.length+' · '+s.title+' ·';
+  clock.textContent='t = '+t.toFixed(1)+' с';
+  tabs.forEach(function(b,j){b.setAttribute('aria-selected',j===k?'true':'false');});
+}
+function label(){
+  if(RM){play.textContent=idx()>=STEPS.length-1?'Сначала':'Следующий шаг';return;}
+  play.textContent=on?'Пауза':(t>=DUR?'Повтор':'Пуск');play.setAttribute('aria-pressed',on?'true':'false');
+}
+function loop(ts){if(!on)return;var dt=Math.min(0.1,(ts-last)/1000);last=ts;t=Math.min(DUR,t+dt*spd);if(t>=DUR)on=false;draw();label();if(on)requestAnimationFrame(loop);}
+play.addEventListener('click',function(){
+  if(RM){var i=idx();t=i>=STEPS.length-1?0:STEPS[i+1].t;draw();label();return;}
+  if(on){on=false;label();return;}
+  if(t>=DUR)t=0;on=true;last=performance.now();label();requestAnimationFrame(loop);
+});
+reset.addEventListener('click',function(){on=false;t=0;draw();label();});
+rng.addEventListener('input',function(){on=false;t=Number(rng.value)/100;draw();label();});
+tabs.forEach(function(b,j){b.addEventListener('click',function(){t=SCN[j].off;draw();label();});});
+if(!RM){var sp=document.createElement('span');sp.className='spd';sp.setAttribute('role','group');sp.setAttribute('aria-label','Скорость');
+  [1,0.5,0.25].forEach(function(k){var b=document.createElement('button');b.type='button';b.textContent='×'+k;b.setAttribute('aria-pressed',k===1?'true':'false');
+    b.addEventListener('click',function(){spd=k;[].forEach.call(sp.children,function(c){c.setAttribute('aria-pressed',c===b?'true':'false');});});sp.appendChild(b);});
+  reset.parentNode.insertBefore(sp,rng);}
+draw();label();
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var box=document.getElementById('archinfo');if(!box)return;
+var modem=function(n){return 'Модуль Quectel RM520N-GL (5G / LTE-A кат. 20) на плате M.2 → Ethernet 2.5G с питанием по PoE. Модем сам поднимает связь и отдаёт адрес оператора в роутер (IP passthrough), две SIM-карты с переключением по команде. Ставится до 100 м от роутера: у окна, на чердаке или на мачте. В комплекте 3, 4 или 5 модемов.';};
+var op=function(x,n){return 'Сотовая сеть оператора '+x+', через которую модем '+n+' доходит до ЦОД. Транспорт до узла идёт по стандартным HTTPS и HTTP/3 (QUIC). Если канал теряет связь с узлом, он выпадает из круга распределения.';};
+var D={
+  router:'NanoPi R5S на OpenWrt. На нём работает движок маршрутизации трафика: держит каналы до ЦОД, раздаёт новые соединения по живым каналам и переключает трафик с Ethernet на сотовые. С коммутатором связан транком с VLAN модемов и отдельным портом LAN; Ethernet провайдера подключён напрямую.',
+  switch:'Управляемый PoE-коммутатор (Zyxel GS1900-10HP или D-Link DGS-1210-10P) с прошивкой OpenWrt. Каждый модем в своём VLAN, к роутеру идёт один транк. Питание PoE включается и выключается по каждому порту: так роутер перезагружает зависший модем без выезда инженера. Отказ коммутатора отключает только резерв.',
+  modem1:modem(1),modem2:modem(2),modem3:modem(3),
+  ap:'Точка доступа Wi-Fi 6 с питанием PoE от коммутатора и прошивкой OpenWrt, как у роутера и коммутатора. Ставится там, где нужно покрытие, а не там, где стоит роутер.',
+  isp:'Основной канал объекта. Идёт до узла агрегации в ЦОД так же, как сотовые, поэтому управляется движком и выходит в интернет с адреса узла. Подключён к роутеру напрямую, мимо коммутатора.',
+  opA:op('A',1),opB:op('B',2),opC:op('C',3),
+  bus:'Каналы всех операторов и Ethernet доходят до узла агрегации через обычный интернет. Между объектом и ЦОД нет выделенных линий: управляемость даёт движок на концах каналов.',
+  dc1:'Узел агрегации: принимает каналы клиента, открывает соединения в интернет со своего адреса, держит управление и мониторинг. Подключение 2×10G и свой выходной адрес. Для половины клиентов это основной ЦОД.',
+  dc2:'Второй узел агрегации, для этого клиента резервный. Если ЦОД 1 недоступен, движок переводит каналы сюда: открытые соединения переподключаются, адрес выхода меняется на адрес ЦОД 2.'
+};
+var title=box.querySelector('b'),text=box.querySelector('span'),hots=document.querySelectorAll('svg .hot'),cur=null;
+function show(el){if(cur)cur.classList.remove('hl');cur=el;el.classList.add('hl');title.textContent=el.getAttribute('aria-label');text.textContent=D[el.getAttribute('data-k')]||'';}
+[].forEach.call(hots,function(el){
+  el.addEventListener('mouseenter',function(){show(el);});
+  el.addEventListener('focus',function(){show(el);});
+  el.addEventListener('click',function(){show(el);});
+  el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();show(el);}});
+});
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var form=document.getElementById('fm-form');if(!form)return;
+var NS='http://www.w3.org/2000/svg',H=60;
+function $(id){return document.getElementById(id);}
+/* OV substitutes field values when the model is re-run with one field put back to its recommended value */
+var OV=null;
+function v(id){if(OV&&OV.hasOwnProperty(id))return OV[id];var x=parseFloat($(id).value.replace(/[\s\u2009]/g,''));return isFinite(x)&&x>=0?x:0;}
+function E(tag,a,p){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function T(txt,a,p){var e=E('text',a,p);e.textContent=txt;return e;}
+/* thousands are split by a thin space (U+2009); numbers that must not wrap get white-space:nowrap in CSS */
+function loc(n,o){return n.toLocaleString('ru-RU',o).replace(/[\u00a0\u202f\s]/g,'\u2009');}
+function int(n){return loc(Math.round(n));}
+function rub(n){return (n<0?'− ':'')+int(Math.abs(n))+' ₽';}
+function mln(n){return (n<0?'− ':'')+loc(Math.abs(n)/1e6,{minimumFractionDigits:1,maximumFractionDigits:1})+' млн ₽';}
+function pl(n,f){n=Math.round(Math.abs(n));var a=n%10,b=n%100;return int(n)+' '+(b>=11&&b<=19?f[2]:a===1?f[0]:a>=2&&a<=4?f[1]:f[2]);}
+var OBJ=['объект','объекта','объектов'],OBJP=['объекте','объектах','объектах'],MON=['месяц','месяца','месяцев'];
+function monthName(m){var y=Math.ceil(m/12);return 'месяц '+m+' · '+y+'-й год';}
+function setHTML(id,html){$(id).innerHTML=html;}
+function b(x){return '<b>'+x+'</b>';}
+
+/* development payments follow the terms in section 07: 60 % before a stage starts, 40 % after its acceptance */
+var RND=[{n:1,r:'I',from:1,to:8},{n:2,r:'II',from:6,to:9}];
+
+/* monthly simulation over 60 months: sales per quarter grow geometrically and spread over the months of the quarter,
+   churn is applied monthly from the yearly rate; planned sales are scaled by the share of the market still free
+   (1 - objects/capacity), so the base approaches the capacity asymptotically; after N sold objects operating costs are at least a set share of revenue (staff, field trips, replacements, sales); servers go in pairs (one per DC) from the sales start and are added
+   per N connections, development (with reserve) is paid on the fixed 60/40 schedule; prices and costs are the averages
+   over the tariff mix, which is exact while the mix is fixed because every term is linear in the object count */
+function model(p){
+  var rows=[],cum=0,active=0,sold=0,kits=0,maxSrv=0,cRate=1-Math.pow(1-p.churn/100,1/12),k=1+p.reserve/100,pay={};
+  RND.forEach(function(st){var sum=p['rnd'+st.n]*k;pay[st.from]=(pay[st.from]||0)+sum*.6;pay[st.to]=(pay[st.to]||0)+sum*.4;});
+  for(var m=1;m<=H;m++){
+    var nw=0;
+    if(m>=p.start){var q=Math.floor((m-p.start)/3),rate=p.q1*Math.pow(1+p.growth/100,q)/3;
+      rate*=p.cap>0?Math.max(0,1-active/p.cap):0;
+      var soldNow=sold+rate;nw=Math.floor(soldNow+1e-9)-Math.floor(sold+1e-9);sold=soldNow;}
+    var kept=active*(1-cRate);nw=Math.min(nw,Math.max(0,Math.floor(p.cap-kept+1e-9)));
+    active=kept+nw;
+    var n=Math.ceil(active-1e-9);
+    var srv=m>=p.start?2*Math.max(1,Math.ceil(n/p.perServer)):0;
+    var addSrv=Math.max(0,srv-maxSrv);maxSrv=Math.max(maxSrv,srv);
+    var revenue=active*p.fee+nw*p.setup;
+    var full=Math.max(0,Math.min(nw,p.kitFrom-1-kits)),kitCost=full*p.kit+(nw-full)*p.kit*(1-p.kitCut/100);kits+=nw;
+    var opex=active*p.sim+maxSrv*p.srvOpex;if(kits>=p.costFrom)opex=Math.max(opex,revenue*p.costPct/100);
+    var capex=kitCost+nw*p.install+addSrv*p.server+(pay[m]||0);
+    var cash=revenue-opex-capex;cum+=cash;
+    rows.push({m:m,nw:nw,active:active,n:n,srv:maxSrv,revenue:revenue,opex:opex,capex:capex,cash:cash,cum:cum});
+  }
+  return rows;
+}
+
+function sumTo(rows,k,to){var s=0;for(var i=0;i<to;i++)s+=rows[i][k];return s;}
+
+var TAR=[{k:'b',n:'Базовый'},{k:'i',n:'Промышленный'},{k:'r',n:'Удалённые'}];
+
+function params(){
+  var tr=TAR.map(function(t){return {n:t.n,fee:v('fm-fee-'+t.k),setup:v('fm-setup-'+t.k),share:v('fm-share-'+t.k),kit:v('fm-kit-'+t.k),sim:v('fm-sim-'+t.k)};});
+  var sh=tr.reduce(function(a,t){return a+t.share;},0);
+  tr.forEach(function(t){t.w=sh>0?t.share/sh:1/tr.length;});
+  function avg(k){return tr.reduce(function(a,t){return a+t.w*t[k];},0);}
+  var p={fee:avg('fee'),setup:avg('setup'),kit:avg('kit'),sim:avg('sim'),q1:v('fm-q1'),growth:v('fm-growth'),start:Math.max(1,Math.min(H,Math.round(v('fm-start')))),churn:Math.min(100,v('fm-churn')),cap:v('fm-cap'),costPct:Math.min(40,Math.max(10,v('fm-costPct'))),costFrom:v('fm-costFrom'),
+    kitCut:Math.min(100,v('fm-kitCut')),kitFrom:Math.max(1,Math.round(v('fm-kitFrom'))),install:v('fm-install'),perServer:Math.max(1,v('fm-perServer')),server:v('fm-server'),srvOpex:v('fm-srvOpex'),
+    rnd1:v('fm-rnd1'),rnd2:v('fm-rnd2'),reserve:v('fm-reserve')};
+  return {tr:tr,p:p};
+}
+
+function render(){
+  var P0=params(),tr=P0.tr,p=P0.p;
+  var R=model(p),kRes=1+p.reserve/100,rndTotal=(p.rnd1+p.rnd2)*kRes;
+
+  /* unit economics of one object, per tariff and on average */
+  var cut=1-p.kitCut/100,uSrv=2*p.srvOpex/p.perServer,oSrv=2*p.server/p.perServer;
+  tr.forEach(function(t){t.unit=t.fee-t.sim-uSrv;t.kitS=t.kit*cut;t.once=t.setup-t.kitS-p.install-oSrv;});
+  tr.forEach(function(t){t.other=Math.max(0,t.fee*p.costPct/100-t.sim-uSrv);t.unit-=t.other;});
+  var other=Math.max(0,p.fee*p.costPct/100-p.sim-uSrv),unit=p.fee-p.sim-uSrv-other,kitS=p.kit*cut,once=p.setup-kitS-p.install-oSrv;
+
+  /* derived lines under the input steps */
+  var firstYear=0;for(var i=p.start-1;i<Math.min(H,p.start+11);i++)firstYear+=R[i].nw;
+  function pct(w){return Math.round(w*100)+' %';}
+  setHTML('fm-d-price','При такой доле тарифов средний объект платит '+b(rub(p.fee))+' в месяц и '+b(rub(p.setup))+' за пусконаладку, за первый год — '+b(rub(p.setup+12*p.fee))+'. Доли продаж: '+tr.map(function(t){return t.n.toLowerCase()+' '+pct(t.w);}).join(', ')+'.');
+  setHTML('fm-d-cost','Средний комплект с монтажом обходится в '+b(rub(p.kit+p.install))+' для первых '+(p.kitFrom-1)+' комплектов и в '+b(rub(kitS+p.install))+' начиная с '+p.kitFrom+'-го, дальше в среднем '+b(rub(p.sim))+' в месяц на SIM-карты и трафик.');
+  setHTML('fm-d-ops','На один объект в месяц уходит '+b(rub(uSrv))+' на размещение и канал серверов в двух ЦОД. За первый год продаж подключается '+b(pl(firstYear,OBJ))+'.');
+  setHTML('fm-d-rnd','В модель входит '+b(rub(rndTotal))+' = '+rub(p.rnd1+p.rnd2)+' × '+loc(kRes,{maximumFractionDigits:2})+'. '+RND.map(function(st){var sum=p['rnd'+st.n]*kRes;return 'Этап '+st.r+': '+b(rub(sum*.6))+' в '+st.from+'-м месяце и '+b(rub(sum*.4))+' в '+st.to+'-м';}).join('. ')+'.');
+
+  /* results in sentences */
+  var minI=0;R.forEach(function(r,i){if(r.cum<R[minI].cum)minI=i;});
+  var pay=null;for(i=minI;i<R.length;i++){if(R[i].cum>=0){pay=R[i].m;break;}}
+  var need=-Math.min(0,R[minI].cum),last=R[H-1];
+  if(pay){
+    var P=R[pay-1],afterSales=pay-p.start+1;
+    setHTML('fm-r-lead',afterSales>0?'Проект окупается через '+b(pl(afterSales,MON))+' после начала продаж, на '+b(pl(P.n,OBJP)):'Проект окупается ещё до начала продаж');
+    setHTML('fm-r-when','Срок считается от первого месяца продаж: с него денежный поток нарастающим итогом, включая всю разработку, выходит в плюс за '+b(pl(afterSales,MON))+
+      ' (продажи начинаются в '+p.start+'-м месяце проекта, окупаемость — в '+pay+'-м). К этому моменту подключено '+pl(P.n,OBJ)+', выручка за месяц '+mln(P.revenue)+'.');
+  }else{
+    setHTML('fm-r-lead','На этих цифрах проект '+b('не окупается за пять лет'));
+    setHTML('fm-r-when','Через 60 месяцев денежный поток нарастающим итогом остаётся отрицательным: '+b(mln(last.cum))+' при '+pl(last.n,OBJP)+'. Чтобы выйти в плюс, нужны другие цены, расходы или темп продаж.');
+  }
+  var needEl=$('fm-r-need');needEl.textContent=need>0?mln(need):'0 ₽';needEl.className='v'+(need>0?' neg':'');
+  $('fm-r-need-n').textContent=need>0?'Самая глубокая точка денежного потока: '+R[minI].m+'-й месяц, '+pl(R[minI].n,OBJ)+(pay?'. Столько денег нужно, чтобы дойти до окупаемости.':'. Столько денег не хватает к концу горизонта.'):'Денежный поток не уходит в минус.';
+  var dl=$('fm-r-after');dl.innerHTML='';
+  function dd(k,val,cls){var dt=document.createElement('dt');dt.textContent=k;var d=document.createElement('dd');d.textContent=val;if(cls)d.className=cls;dl.appendChild(dt);dl.appendChild(d);}
+  if(pay){
+    var am=Math.min(H,pay+12),A=R[am-1];
+    $('fm-r-after-h').textContent=am===pay+12?'Через год после окупаемости (месяц '+am+')':'К концу горизонта (месяц '+am+', меньше года после окупаемости)';
+    dd('Подключённых объектов',int(A.n),'big');
+    dd('Выручка за месяц',mln(A.revenue));
+    dd('Операционная прибыль за месяц',mln(A.revenue-A.opex),A.revenue-A.opex<0?'neg':'');
+    dd('Накоплено с начала проекта',mln(A.cum),A.cum<0?'neg':'');
+  }else{
+    $('fm-r-after-h').textContent='К концу пятого года (месяц 60)';
+    dd('Подключённых объектов',int(last.n),'big');
+    dd('Выручка за месяц',mln(last.revenue));
+    dd('Операционная прибыль за месяц',mln(last.revenue-last.opex),last.revenue-last.opex<0?'neg':'');
+    dd('Накоплено с начала проекта',mln(last.cum),last.cum<0?'neg':'');
+  }
+  var ue=$('fm-r-unit');ue.textContent=rub(unit)+' в месяц';ue.className='v'+(unit<0?' neg':'');
+  $('fm-r-unit-n').textContent=unit>0?'остаётся от средней абонентской платы после всех операционных расходов зрелого бизнеса — '+int(unit/p.fee*100)+' % платы':'объект убыточен каждый месяц: расходы на него выше абонентской платы';
+  var oe=$('fm-r-once');oe.textContent=rub(once)+' на подключении';oe.className='v v2'+(once<0?' neg':'');
+  $('fm-r-once-n').textContent=once>=0?'пусконаладка покрывает комплект, монтаж и долю сервера сразу':('подключение в минус; объект отбивает его за '+(unit>0?pl(Math.ceil(-once/unit),MON):'— не отбивает'));
+
+  /* breakdown tables: one column per tariff plus the mix average */
+  function fill(tbody,rows,sumLabel,sum){
+    function cells(tr,vals,neg){vals.forEach(function(x){var c=tr.insertCell();c.className='r'+(neg&&x<0?' neg':'');c.textContent=(x<0?'− ':'')+int(Math.abs(x));});}
+    tbody.innerHTML='';
+    rows.forEach(function(r){var tr=tbody.insertRow();tr.insertCell().textContent=r[0];cells(tr,r[1]);});
+    var tr=tbody.insertRow();tr.className='sum';tr.insertCell().textContent=sumLabel;cells(tr,sum,true);
+  }
+  function col(k,sign,a){return tr.map(function(t){return sign*t[k];}).concat(sign*a);}
+  function same(x){return [x,x,x,x];}
+  fill($('fm-unit').tBodies[0],[['Абонентская плата',col('fee',1,p.fee)],['SIM-карты и трафик',col('sim',-1,p.sim)],['Доля серверов в двух ЦОД: размещение и канал',same(-uSrv)],['Прочие расходы после '+int(p.costFrom)+' объектов, до '+int(p.costPct)+' % выручки',col('other',-1,other)]],'Доход с объекта в месяц',col('unit',1,unit));
+  fill($('fm-once').tBodies[0],[['Пусконаладка',col('setup',1,p.setup)],['Комплект оборудования, с '+p.kitFrom+'-го комплекта',col('kitS',-1,kitS)],['Выезд и монтаж',same(-p.install)],['Доля серверов в двух ЦОД: покупка',same(-oSrv)]],'Доход с подключения',col('once',1,once));
+
+  /* yearly table */
+  var Y=[12,24,36,60],yb=$('fm-years').tBodies[0];yb.innerHTML='';
+  function row(label,f,cls){var tr=yb.insertRow();if(cls)tr.className=cls;tr.insertCell().textContent=label;Y.forEach(function(m){var c=tr.insertCell();var val=f(m);c.className='r'+(typeof val==='number'&&val<0?' neg':'');c.textContent=typeof val==='number'?mln(val):val;});}
+  row('Объектов на конец периода',function(m){return int(R[m-1].n);});
+  row('Выручка за период',function(m){return sumTo(R,'revenue',m);});
+  row('Операционные расходы за период',function(m){return sumTo(R,'opex',m);});
+  row('Операционная прибыль за период',function(m){return sumTo(R,'revenue',m)-sumTo(R,'opex',m);});
+  row('Вложения за период: разработка, серверы, комплекты',function(m){return sumTo(R,'capex',m);});
+  row('Денежный поток нарастающим итогом',function(m){return R[m-1].cum;},'sum');
+  row('Серверов в двух ЦОД',function(m){return int(R[m-1].srv);});
+
+  markFields(R);
+  /* the same model on the recommended values, drawn dashed under the current curve once any field is moved */
+  var B=null;
+  [].forEach.call(form.querySelectorAll('input[data-def]'),function(el){var d=Number(el.getAttribute('data-def'));if(Math.abs(v(el.id)-d)>1e-9){B=B||{};}});
+  if(B){OV={};[].forEach.call(form.querySelectorAll('input[data-def]'),function(el){OV[el.id]=Number(el.getAttribute('data-def'));});B=model(params().p);OV=null;}
+  [].forEach.call(document.querySelectorAll('#fm .fm-leg'),function(l){l.hidden=!B;});
+  drawCash(R,pay,minI,p.start,B);drawObjs(R,pay,p.start,B);
+}
+
+/* fields at the recommended value get a dashed border; a moved field turns green when it improves the five-year
+   cumulative cash compared with its recommended value and red when it makes it worse, other fields as they are */
+function markFields(R){
+  var now=R[H-1].cum;
+  [].forEach.call(form.querySelectorAll('input[data-def]'),function(el){
+    var def=Number(el.getAttribute('data-def')),cur=v(el.id),cls='is-def';
+    if(Math.abs(cur-def)>1e-9){OV={};OV[el.id]=def;var base=model(params().p)[H-1].cum;OV=null;cls=now>base+1?'is-up':now<base-1?'is-down':'is-mod';}
+    el.classList.remove('is-def','is-up','is-down','is-mod');el.classList.add(cls);
+    if(el._rb)el._rb.classList.toggle('off',cls==='is-def');
+    el.title=cls==='is-def'?'Рекомендуемое значение':'Рекомендуемое значение: '+int(def);
+  });
+}
+
+/* ---------- charts: one series each, shared x, synced hover ---------- */
+var X0=64,X1=884;
+function xm(m){return X0+(m-1)/(H-1)*(X1-X0);}
+function nice(lo,hi,n){var span=hi-lo||1,step=Math.pow(10,Math.floor(Math.log10(span/n))),err=span/n/step;step*=err>=7.5?10:err>=3.5?5:err>=1.5?2:1;return {lo:Math.floor(lo/step)*step,hi:Math.ceil(hi/step)*step,step:step};}
+function xAxis(svg,y0,y1,start){
+  for(var yr=1;yr<=5;yr++){var x=xm(yr*12);E('line',{x1:x,x2:x,y1:y0,y2:y1,'class':'grid'},svg);T(yr+(yr===1?' год':yr<5?' года':' лет'),{x:x,y:y1+16,'text-anchor':'middle'},svg);}
+  if(start>1){var xs=xm(start);E('line',{x1:xs,x2:xs,y1:y0,y2:y1,'class':'vline'},svg);T('старт продаж',{x:xs+5,y:y0+10},svg);}
+}
+/* label next to a marked point: to the left of the point in the right half of the plot, to the right otherwise */
+function label(svg,q,dy,txt){var left=q[0]>(X0+X1)/2;T(txt,{x:q[0]+(left?-8:8),y:q[1]+dy,'text-anchor':left?'end':'start','class':'mark-t'},svg);}
+var hover={};
+function hoverLayer(svg,key,y0,y1,tipId,fmt,R){
+  var xh=E('line',{x1:0,x2:0,y1:y0,y2:y1,'class':'xh',visibility:'hidden'},svg);
+  var hit=E('rect',{x:X0,y:y0,width:X1-X0,height:y1-y0,'class':'hit'},svg);
+  hover[key]={xh:xh,tip:$(tipId),fmt:fmt,svg:svg};
+  function at(evt){var b=svg.getBoundingClientRect(),sx=(evt.clientX-b.left)/b.width*900;var m=Math.round((sx-X0)/(X1-X0)*(H-1))+1;return Math.max(1,Math.min(H,m));}
+  function show(m){Object.keys(hover).forEach(function(k){var h=hover[k];var x=xm(m);h.xh.setAttribute('x1',x);h.xh.setAttribute('x2',x);h.xh.setAttribute('visibility','visible');
+    h.tip.hidden=false;h.tip.innerHTML=h.fmt(R[m-1]);var bw=h.svg.getBoundingClientRect().width,px=x/900*bw;h.tip.style.left=(px>bw*0.6?px-h.tip.offsetWidth-12:px+12)+'px';});}
+  function hide(){Object.keys(hover).forEach(function(k){hover[k].xh.setAttribute('visibility','hidden');hover[k].tip.hidden=true;});}
+  hit.addEventListener('mousemove',function(e){show(at(e));});
+  hit.addEventListener('mouseleave',hide);
+  hit.addEventListener('touchstart',function(e){show(at(e.touches[0]));},{passive:true});
+}
+function basePath(svg,B,f){if(B)E('path',{d:'M'+B.map(function(r){return xm(r.m).toFixed(1)+','+f(r).toFixed(1);}).join(' L'),'class':'line-base'},svg);}
+function drawCash(R,pay,mi,start,B){
+  var svg=$('fm-cash');svg.textContent='';var Y0=18,Y1=254;
+  var all=R.concat(B||[]),lo=Math.min(0,Math.min.apply(null,all.map(function(r){return r.cum;}))),hi=Math.max(0,Math.max.apply(null,all.map(function(r){return r.cum;})));
+  var s=nice(lo/1e6,hi/1e6,5);function ym(val){return Y1-(val/1e6-s.lo)/(s.hi-s.lo)*(Y1-Y0);}
+  for(var g=s.lo;g<=s.hi+1e-9;g+=s.step){var y=ym(g*1e6);E('line',{x1:X0,x2:X1,y1:y,y2:y,'class':Math.abs(g)<1e-9?'zero':'grid'},svg);T(loc(g),{x:X0-8,y:y+4,'text-anchor':'end'},svg);}
+  T('млн ₽',{x:X0-8,y:Y0-6,'text-anchor':'end'},svg);
+  xAxis(svg,Y0,Y1,start);
+  var z=ym(0),pts=R.map(function(r){return [xm(r.m),ym(r.cum)];});
+  var neg='M'+pts[0][0]+','+z,pos='M'+pts[0][0]+','+z;
+  pts.forEach(function(q){neg+=' L'+q[0]+','+Math.max(q[1],z);pos+=' L'+q[0]+','+Math.min(q[1],z);});
+  neg+=' L'+pts[pts.length-1][0]+','+z+' Z';pos+=' L'+pts[pts.length-1][0]+','+z+' Z';
+  E('path',{d:neg,'class':'area-neg'},svg);E('path',{d:pos,'class':'area-pos'},svg);
+  basePath(svg,B,function(r){return ym(r.cum);});
+  E('path',{d:'M'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' L'),'class':'line'},svg);
+  if(R[mi].cum<0){E('circle',{cx:pts[mi][0],cy:pts[mi][1],r:4,'class':'mark'},svg);label(svg,pts[mi],16,'пик вложений '+mln(-R[mi].cum)+', месяц '+R[mi].m);}
+  if(pay){var q=pts[pay-1];E('circle',{cx:q[0],cy:q[1],r:4,'class':'mark'},svg);label(svg,q,-10,'окупаемость, месяц '+pay);}
+  hoverLayer(svg,'cash',Y0,Y1,'fm-tip-cash',function(r){return monthName(r.m)+'<br>нарастающим итогом: <b>'+mln(r.cum)+'</b><br>за месяц: '+mln(r.cash)+(B?'<br>с рекомендуемыми параметрами: '+mln(B[r.m-1].cum):'');},R);
+}
+function drawObjs(R,pay,start,B){
+  var svg=$('fm-objs');svg.textContent='';var Y0=18,Y1=196;
+  var hi=Math.max(1,Math.max.apply(null,R.concat(B||[]).map(function(r){return r.n;})));var s=nice(0,hi,4);
+  function ym(val){return Y1-(val-s.lo)/(s.hi-s.lo)*(Y1-Y0);}
+  for(var g=s.lo;g<=s.hi+1e-9;g+=s.step){var y=ym(g);E('line',{x1:X0,x2:X1,y1:y,y2:y,'class':g===0?'zero':'grid'},svg);T(loc(g),{x:X0-8,y:y+4,'text-anchor':'end'},svg);}
+  T('объектов',{x:X0-8,y:Y0-6,'text-anchor':'end'},svg);
+  xAxis(svg,Y0,Y1,start);
+  var pts=R.map(function(r){return [xm(r.m),ym(r.n)];}),z=ym(0);
+  E('path',{d:'M'+pts[0][0]+','+z+' L'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' L')+' L'+pts[pts.length-1][0]+','+z+' Z','class':'area-pos'},svg);
+  basePath(svg,B,function(r){return ym(r.n);});
+  E('path',{d:'M'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' L'),'class':'line'},svg);
+  if(pay){var q=pts[pay-1];E('circle',{cx:q[0],cy:q[1],r:4,'class':'mark'},svg);label(svg,q,-10,'окупаемость: '+pl(R[pay-1].n,OBJ));}
+  hoverLayer(svg,'objs',Y0,Y1,'fm-tip-objs',function(r){return monthName(r.m)+'<br>объектов: <b>'+int(r.n)+'</b>, новых за месяц: '+int(r.nw)+'<br>серверов в двух ЦОД: '+r.srv+(B?'<br>с рекомендуемыми параметрами: '+int(B[r.m-1].n):'');},R);
+}
+
+/* the recommended value of every field is its initial value */
+[].forEach.call(form.querySelectorAll('input[type=number]'),function(el){el.setAttribute('data-def',parseFloat(el.getAttribute('value')));});
+/* every field: the unit sits inside it on the right, and a reset button next to it puts the recommended value back */
+[].forEach.call(form.querySelectorAll('input[data-def]'),function(el){
+  var w=document.createElement('span'),box=document.createElement('span'),rb=document.createElement('button');
+  w.className='fm-in';box.className='fm-box';el.parentNode.insertBefore(w,el);box.appendChild(el);w.appendChild(box);
+  if(el.getAttribute('data-u')){var u=document.createElement('span');u.className='fm-u';u.textContent=el.getAttribute('data-u');box.appendChild(u);el.style.paddingRight=(u.textContent.length*0.62+1.4)+'em';}
+  rb.type='button';rb.className='fm-reset';rb.textContent='↺';rb.title='Вернуть рекомендуемое значение';rb.setAttribute('aria-label','Вернуть рекомендуемое значение');
+  rb.addEventListener('click',function(){var d=Number(el.getAttribute('data-def'));el.value=el.type==='text'?int(d):d;render();el.focus();});
+  w.appendChild(rb);el._rb=rb;
+});
+/* money fields: plain text with thin-space thousands; arrows keep the step of the former number input */
+[].forEach.call(form.querySelectorAll('input[type=number]'),function(el){
+  if(Number(el.value)<1000)return;
+  var step=Number(el.getAttribute('step'))||1;
+  el.type='text';el.inputMode='numeric';el.autocomplete='off';el.value=int(Number(el.value));
+  el.addEventListener('input',function(){
+    var pos=el.selectionStart,digits=el.value.slice(0,pos).replace(/\D/g,'').length,raw=el.value.replace(/\D/g,'');
+    el.value=raw?int(Number(raw)):'';
+    for(pos=0;digits>0&&pos<el.value.length;pos++)if(/\d/.test(el.value[pos]))digits--;
+    el.setSelectionRange(pos,pos);});
+  el.addEventListener('keydown',function(e){
+    if(e.key!=='ArrowUp'&&e.key!=='ArrowDown')return;e.preventDefault();
+    el.value=int(Math.max(0,v(el.id)+(e.key==='ArrowUp'?step:-step)));render();});
+});
+form.addEventListener('input',render);
+/* a typed value outside the field's min/max is pulled back into range when the field is left */
+form.addEventListener('change',function(e){var el=e.target;if(el.type!=='number')return;var x=parseFloat(el.value),lo=parseFloat(el.min),hi=parseFloat(el.max);
+  if(!isFinite(x))return;if(isFinite(lo)&&x<lo)el.value=lo;else if(isFinite(hi)&&x>hi)el.value=hi;else return;render();});
+form.addEventListener('submit',function(e){e.preventDefault();});
+render();
+})();
+</script>
+</body>
+</html>

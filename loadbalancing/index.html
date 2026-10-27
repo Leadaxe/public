@@ -194,91 +194,56 @@ svg .hot:hover,svg .hot:focus-visible,svg .hot.hl{fill-opacity:.08;stroke-opacit
 .archinfo{display:grid;gap:4px;padding:12px 4px 2px;border-top:1px solid var(--line);min-height:6.2em;font-size:15px;line-height:1.55}
 .archinfo b{font-family:var(--display);font-weight:500;font-size:16px;color:var(--accent)}
 
-/* financial model (section 08): four numbered input steps, a results block in plain sentences, two tables, a yearly table and two one-series charts */
-.fm{display:grid;gap:14px}
-.fm-step{border:1px solid var(--line);border-radius:8px;background:var(--paper);margin:0;padding:16px 18px 16px;display:grid;gap:12px;min-width:0}
-.fm-step h3{margin:0 0 2px;font-family:var(--display);font-weight:500;font-size:17px;line-height:1.3;display:flex;gap:12px;align-items:baseline}
-.fm-n{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);min-width:4ch}
-.fm-hint{font-size:14px;color:var(--muted);line-height:1.5;max-width:70ch}
-.fm-sub{display:grid;gap:8px;padding-top:6px;border-top:1px solid var(--line)}
-.fm-sub h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.fm-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 18px}
-.fm-fields label{display:grid;grid-row:span 2;grid-template-rows:subgrid;row-gap:5px;align-content:start;min-width:0;font-size:13.5px;line-height:1.4;color:var(--ink)}
-.fm-fields label small{display:block;font-size:12.5px;color:var(--muted);line-height:1.4}
-.fm-mxw{overflow-x:auto}
-.fm-mx{min-width:560px;font-size:14px;table-layout:fixed}
-.fm-mx th:first-child{width:34%}
-.fm-mx tbody th label{display:block;cursor:pointer}
-.fm-mx + .fm-mx,.fm-mxw + .fm-mxw{margin-top:4px}
-.fm-mx th,.fm-mx td{padding:6px 8px;border:0;text-transform:none;letter-spacing:0;vertical-align:middle;background:none}
-.fm-mx thead th{font-size:13px;font-weight:600;color:var(--muted);text-align:left}
-.fm-mx tbody th{font-weight:400;text-align:left;color:var(--ink);line-height:1.4}
-.fm-mx tbody th small{display:block;font-size:12.5px;color:var(--muted)}
-.fm input[type=number]{-moz-appearance:textfield;appearance:textfield}
-.fm input[type=number]::-webkit-inner-spin-button,.fm input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.fm input.is-up{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
-.fm input.is-down{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
-.fm-in{display:flex;align-items:center;gap:4px;min-width:0;align-self:start}
-.fm-box{position:relative;flex:1;min-width:0}
-.fm-fields .fm-in{max-width:186px}
-.fm-reset{flex:none;width:26px;height:26px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer}
-.fm-reset:hover{color:var(--accent);background:var(--accent-soft)}
-.fm-reset:focus-visible{outline:2px solid var(--accent)}
-.fm-reset.off{visibility:hidden}
-.fm-u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none;white-space:nowrap}
-.fm-fields input,.fm-mx input{font-family:var(--mono);font-size:15px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;align-self:start}
-.fm b,.fm .v,.fm dd,.fm td:not(:first-child){white-space:nowrap}
-.fm-fields input:focus-visible,.fm-mx input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.fm-derived{font-size:14.5px;line-height:1.5;color:var(--muted);padding:10px 12px;border-radius:6px;background:var(--bg)}
-.fm-derived b{color:var(--ink);font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
-.fm-derived.fm-total{background:var(--accent-soft);color:var(--ink);font-size:15px}
-.fm-derived.fm-total b{color:var(--accent)}
-
-.fm-res{display:grid;gap:14px}
-.fm-hero{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:20px 22px 22px;display:grid;gap:10px}
-.fm-lead{font-family:var(--display);font-weight:500;font-size:clamp(19px,2.6vw,25px);line-height:1.3;text-wrap:balance;max-width:30ch}
-.fm-lead b{color:var(--accent);font-weight:700}
-.fm-when{font-size:16px;line-height:1.55;max-width:70ch}
-.fm-when b{font-weight:600;font-variant-numeric:tabular-nums}
-.fm-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.fm-fact{background:var(--paper);padding:16px 18px;display:grid;gap:4px;align-content:start}
-.fm-fact .v{font-family:var(--mono);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1.2}
-.fm-fact .v.v2{margin-top:8px}
-.fm-fact .k{font-size:14px;color:var(--muted);line-height:1.45}
-.fm-fact .v.neg{color:var(--bad)}
-.fm-dl{margin:4px 0 0;display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:14px}
-.fm-dl dt{color:var(--muted);line-height:1.4}
-.fm-dl dd{margin:0;font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;line-height:1.4}
-.fm-dl dd.neg{color:var(--bad)}
-.fm-dl .big{font-size:20px;color:var(--accent)}
-.fm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
-.fm-grid .tbl table{min-width:0}
-#fm-years td:first-child,#fm-unit td:first-child,#fm-once td:first-child{white-space:normal}
-#fm-years td.neg,#fm-unit td.neg,#fm-once td.neg{color:var(--bad)}
-.fm-chart{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
-.fm-ch-h{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:0 0 6px;font-size:14px;color:var(--muted)}
-.fm-ch-h b{color:var(--ink);font-weight:600}
-.fm-plot{position:relative;overflow-x:auto}
-.fm-plot svg{display:block;width:100%;min-width:640px;height:auto}
-.fm-plot svg text{font-family:var(--body);font-size:12px;fill:var(--muted)}
-.fm-plot .grid{stroke:var(--line);stroke-width:1}
-.fm-plot .zero{stroke:var(--muted);stroke-width:1.2}
-.fm-plot .line-base{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4;stroke-linejoin:round}
-.fm-leg{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:13px}
-.fm-leg[hidden]{display:none}
-.fm-leg i{display:inline-block;width:18px;height:0;border-top:2px solid var(--accent)}
-.fm-leg i.base{border-top:2px dashed var(--muted);margin-left:8px}
-.fm-plot .line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.fm-plot .area-neg{fill:var(--bad);opacity:.10}
-.fm-plot .area-pos{fill:var(--accent);opacity:.12}
-.fm-plot .mark{fill:var(--accent);stroke:var(--paper);stroke-width:2}
-.fm-plot .mark-t{fill:var(--ink);font-weight:600}
-.fm-plot .vline{stroke:var(--muted);stroke-width:1;stroke-dasharray:2 4}
-.fm-plot .xh{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
-.fm-plot .hit{fill:transparent;cursor:crosshair}
-.fm-tip{position:absolute;top:8px;pointer-events:none;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.45;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap;color:var(--ink)}
-.fm-tip b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
-@media (max-width:520px){.fm-step{padding:14px}.fm-hero{padding:16px 16px 18px}.fm-fact{padding:14px 16px}}
+/* payback calculator (section 08): inputs in grouped cards on the left, results and the cash chart on the right; one column on phones */
+.pb{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.pb{grid-template-columns:minmax(0,1fr)}}
+.pb-in{display:grid;gap:12px}
+.pb-card{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:10px;min-width:0}
+.pb-card h3{font-family:var(--display);font-weight:500;font-size:16px;line-height:1.3}
+.pb-hint{font-size:13px;color:var(--muted);line-height:1.45}
+.pb-row{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:10px;align-items:center}
+.pb-row label{font-size:14px;line-height:1.35}
+.pb-row label small,.pb-chk small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+.pb-tar{display:grid;grid-template-columns:minmax(0,1fr) 108px 64px;gap:8px 10px;align-items:center;font-size:14px}
+.pb-tar .h{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.pb input[type=number],.pb select{width:100%;font:600 14px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:6px;padding:7px 9px;text-align:right}
+.pb select{text-align:left;font-family:var(--body)}
+.pb input:focus-visible,.pb select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.pb-chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.35}
+.pb-chk input{margin-top:3px;accent-color:var(--accent)}
+.pb-note{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.pb-out{display:grid;gap:14px;min-width:0}
+.pb-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.pb-kpi{background:var(--paper);padding:14px 16px;display:grid;gap:4px;align-content:start}
+.pb-kpi:last-child:nth-child(odd){grid-column:1/-1}
+@media (max-width:420px){.pb-kpis{grid-template-columns:minmax(0,1fr)}}
+.pb-kpi .k{font-size:13px;color:var(--muted);line-height:1.35}
+.pb-kpi .v{font:600 22px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.pb-kpi .d{font-size:13px;color:var(--muted)}
+.pb-kpi.s1 .v{color:var(--accent)}.pb-kpi.s2 .v{color:var(--signal)}.pb-kpi.s3 .v{color:var(--pc)}
+.pb-kpi .v.no{color:var(--bad)}
+.pb-unit{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:14px;line-height:1.5}
+.pb-unit b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.pb-chart{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px 6px;min-width:0}
+.pb-ch-h{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding-bottom:6px;font-size:14px;color:var(--muted)}
+.pb-ch-h b{color:var(--ink);font-weight:600}
+.pb-leg{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.pb-leg i{display:inline-block;width:18px;border-top:2.5px solid currentColor}
+.pb-leg[hidden]{display:none}
+.pb-plot{overflow-x:auto}
+.pb-plot svg{display:block;width:100%;min-width:520px;height:auto}
+.pb-plot text{font-family:var(--body);font-size:12px;fill:var(--muted)}
+.pb-plot .grid-l{stroke:var(--line)}.pb-plot .zero{stroke:var(--muted);stroke-width:1.2}
+.pb-plot path.l{fill:none;stroke-width:2.2;stroke-linejoin:round}
+.pb-plot .l1{stroke:var(--accent)}.pb-plot .l2{stroke:var(--signal)}.pb-plot .l3{stroke:var(--pc)}
+.pb-plot .m{stroke:var(--paper);stroke-width:2}.pb-plot .m1{fill:var(--accent)}.pb-plot .m2{fill:var(--signal)}.pb-plot .m3{fill:var(--pc)}
+.pb-plot .mt{fill:var(--ink);font-weight:600}
+.pb-out h3{font-family:var(--display);font-weight:500;font-size:16px;line-height:1.3}
+.pb-out table{min-width:520px;font-size:14px}
+.pb-out td.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pb-out td.no{color:var(--bad)}
+.pb-out tr.mine td{background:var(--accent-soft)}
 
 /* floating section navigation: a button pinned top-right opens the list of sections */
 .toc-btn{position:fixed;z-index:20;top:max(12px,env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));
@@ -791,8 +756,8 @@ section[id]{scroll-margin-top:68px}
 </section>
 
 <section class="stack" id="fm">
-  <h2><span class="n">08</span>Финансовая модель и юнит-экономика</h2>
-  <p class="col">Юнит-экономика проекта на пять лет. Четыре шага ввода: тарифы и цены для клиента, расходы на объект, темп продаж и ЦОД, вложения в разработку. Ниже — результат простыми словами, экономика одного объекта по тарифам, таблица по годам и графики. Цифры по умолчанию стартовые; измените любое поле, и всё пересчитается.</p>
+  <h2><span class="n">08</span>Финансовая модель и окупаемость</h2>
+  <p class="col">Когда окупаются вложения в разработку при заданной чистой прибыли с объекта и темпе продаж. Окупаемость считается отдельно для этапа I и для этапов I и II; этап III добавляется галочкой. Измените любое поле, и всё пересчитается.</p>
 
   <div class="tbl">
     <table>
@@ -806,151 +771,62 @@ section[id]{scroll-margin-top:68px}
   </div>
   <p class="cap col">Инженеры и менеджеры у заказчика уже есть, новых расходов на персонал проект не создаёт, поэтому в модель они не входят. Суда в модель не входят: это отдельное направление роста, см. раздел 07.</p>
 
-  <form class="fm" id="fm-form" novalidate autocomplete="off">
-    <div class="fm-step" role="group" aria-labelledby="fm-h1">
-      <h3 id="fm-h1"><span class="fm-n">08.1</span>Цены для клиента</h3>
-      <p class="fm-hint">Что клиент платит за один объект по каждому тарифу и какую долю продаж даёт тариф. Доли нормируются к 100 %.</p>
-      <div class="fm-mxw">
-        <table class="fm-mx">
-          <thead><tr><th></th><th>Базовый</th><th>Промышленный</th><th>Удалённые объекты</th></tr></thead>
-          <tbody>
-          <tr><th scope="row">Абонентская плата в месяц</th><td><input id="fm-fee-b" data-u="₽/мес" type="number" min="0" step="10000" value="150000" aria-label="Базовый: Абонентская плата, ₽ в месяц"></td><td><input id="fm-fee-i" data-u="₽/мес" type="number" min="0" step="10000" value="400000" aria-label="Промышленный: Абонентская плата, ₽ в месяц"></td><td><input id="fm-fee-r" data-u="₽/мес" type="number" min="0" step="10000" value="1000000" aria-label="Удалённые объекты: Абонентская плата, ₽ в месяц"></td></tr>
-          <tr><th scope="row">Пусконаладка, разово</th><td><input id="fm-setup-b" data-u="₽" type="number" min="0" step="10000" value="400000" aria-label="Базовый: Пусконаладка, ₽ разово"></td><td><input id="fm-setup-i" data-u="₽" type="number" min="0" step="10000" value="600000" aria-label="Промышленный: Пусконаладка, ₽ разово"></td><td><input id="fm-setup-r" data-u="₽" type="number" min="0" step="10000" value="800000" aria-label="Удалённые объекты: Пусконаладка, ₽ разово"></td></tr>
-          <tr><th scope="row">Доля в продажах</th><td><input id="fm-share-b" data-u="%" type="number" min="0" max="100" step="5" value="60" aria-label="Базовый: Доля в продажах, %"></td><td><input id="fm-share-i" data-u="%" type="number" min="0" max="100" step="5" value="30" aria-label="Промышленный: Доля в продажах, %"></td><td><input id="fm-share-r" data-u="%" type="number" min="0" max="100" step="5" value="10" aria-label="Удалённые объекты: Доля в продажах, %"></td></tr>
-          </tbody>
-        </table>
+  <div class="pb">
+    <form class="pb-in" id="pb-form" autocomplete="off">
+      <div class="pb-card">
+        <h3>Чистая прибыль с объекта</h3>
+        <p class="pb-hint">Сколько остаётся с одного объекта в месяц после всех расходов на него. Комплект оборудования клиент оплачивает отдельно. Доли продаж нормируются к 100 %.</p>
+        <div class="pb-tar">
+          <span class="h">Тариф</span><span class="h">₽ в месяц</span><span class="h">Доля, %</span>
+          <label for="pb-m1">Базовый</label><input type="number" id="pb-m1" value="10000" min="0" step="1000"><input type="number" id="pb-w1" value="80" min="0" max="100" step="5" aria-label="Базовый: доля в продажах, %">
+          <label for="pb-m2">Промышленный</label><input type="number" id="pb-m2" value="150000" min="0" step="10000"><input type="number" id="pb-w2" value="15" min="0" max="100" step="5" aria-label="Промышленный: доля в продажах, %">
+          <label for="pb-m3">Удалённые объекты</label><input type="number" id="pb-m3" value="400000" min="0" step="10000"><input type="number" id="pb-w3" value="5" min="0" max="100" step="5" aria-label="Удалённые объекты: доля в продажах, %">
+        </div>
+        <p class="pb-note" id="pb-mix"></p>
       </div>
-      <p class="fm-derived" id="fm-d-price"></p>
-    </div>
 
-    <div class="fm-step" role="group" aria-labelledby="fm-h2">
-      <h3 id="fm-h2"><span class="fm-n">08.2</span>Себестоимость и расходы на объект</h3>
-      <p class="fm-hint">Что мы тратим на объект при подключении и каждый месяц.</p>
-      <div class="fm-mxw">
-        <table class="fm-mx">
-          <thead><tr><th></th><th>Базовый</th><th>Промышленный</th><th>Удалённые объекты</th></tr></thead>
-          <tbody>
-          <tr><th scope="row">Комплект оборудования<small>по розничным ценам</small></th><td><input id="fm-kit-b" data-u="₽" type="number" min="0" step="1000" value="273700" aria-label="Базовый: Комплект оборудования, ₽"></td><td><input id="fm-kit-i" data-u="₽" type="number" min="0" step="1000" value="358200" aria-label="Промышленный: Комплект оборудования, ₽"></td><td><input id="fm-kit-r" data-u="₽" type="number" min="0" step="1000" value="420000" aria-label="Удалённые объекты: Комплект оборудования, ₽"></td></tr>
-          <tr><th scope="row">SIM-карты и трафик в месяц</th><td><input id="fm-sim-b" data-u="₽/мес" type="number" min="0" step="500" value="4500" aria-label="Базовый: SIM-карты и трафик, ₽ в месяц"></td><td><input id="fm-sim-i" data-u="₽/мес" type="number" min="0" step="500" value="7500" aria-label="Промышленный: SIM-карты и трафик, ₽ в месяц"></td><td><input id="fm-sim-r" data-u="₽/мес" type="number" min="0" step="500" value="10000" aria-label="Удалённые объекты: SIM-карты и трафик, ₽ в месяц"></td></tr>
-          </tbody>
-        </table>
+      <div class="pb-card">
+        <h3>Продажи</h3>
+        <div class="pb-row"><label for="pb-rate">Новых объектов</label><input type="number" id="pb-rate" value="100" min="0" step="10"></div>
+        <div class="pb-row"><label for="pb-per">За период</label><select id="pb-per"><option value="1" selected>в месяц</option><option value="3">в квартал</option><option value="12">в год</option></select></div>
+        <div class="pb-row"><label for="pb-start">Начало продаж<small>месяц проекта</small></label><input type="number" id="pb-start" value="9" min="1" max="60" step="1"></div>
+        <div class="pb-row"><label for="pb-churn">Отток<small>% объектов в год</small></label><input type="number" id="pb-churn" value="5" min="0" max="100" step="1"></div>
+        <div class="pb-row"><label for="pb-h">Горизонт<small>месяцев</small></label><input type="number" id="pb-h" value="60" min="12" max="120" step="12"></div>
       </div>
-      <div class="fm-mxw">
-        <table class="fm-mx">
-          <thead><tr><th>Для всех тарифов</th><th></th><th></th><th></th></tr></thead>
-          <tbody>
-            <tr><th scope="row"><label for="fm-kitCut">Снижение цены комплекта после подбора поставщиков</label></th><td><input id="fm-kitCut" data-u="%" type="number" min="0" max="100" step="1" value="30"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-kitFrom">Снижение действует начиная с комплекта №</label></th><td><input id="fm-kitFrom" type="number" min="1" step="1" value="10"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-install">Выезд и монтаж</label></th><td><input id="fm-install" data-u="₽" type="number" min="0" step="5000" value="50000"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-costPct">Операционные расходы зрелого бизнеса, доля выручки<small>персонал, выезды, замена оборудования, продажи; вместе с SIM и ЦОД; от 10 до 40 %</small></label></th><td><input id="fm-costPct" data-u="%" type="number" min="10" max="40" step="5" value="30"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-costFrom">Действуют после объектов<small>до этого расходы — только SIM и ЦОД</small></label></th><td><input id="fm-costFrom" data-u="шт." type="number" min="0" step="10" value="100"></td><td></td><td></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="fm-derived" id="fm-d-cost"></p>
-    </div>
 
-    <div class="fm-step" role="group" aria-labelledby="fm-h3">
-      <h3 id="fm-h3"><span class="fm-n">08.3</span>Темпы продаж и ЦОД</h3>
-      <p class="fm-hint">Сколько объектов подключаем и сколько серверов для них нужно в двух ЦОД.</p>
-      <div class="fm-mxw">
-        <table class="fm-mx">
-          <thead><tr><th>Продажи</th><th></th><th></th><th></th></tr></thead>
-          <tbody>
-            <tr><th scope="row"><label for="fm-q1">Новых объектов в первом квартале продаж</label></th><td><input id="fm-q1" data-u="шт." type="number" min="0" step="1" value="15"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-growth">Рост продаж за квартал<small>каждый следующий квартал продаём на столько больше</small></label></th><td><input id="fm-growth" data-u="%" type="number" min="0" step="1" value="15"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-start">Начало продаж, месяц проекта<small>с этого месяца идут продажи и ставятся серверы</small></label></th><td><input id="fm-start" data-u="мес." type="number" min="1" max="60" step="1" value="9"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-churn">Отток объектов в год<small>доля объектов, которые отключаются за год</small></label></th><td><input id="fm-churn" data-u="%" type="number" min="0" max="100" step="1" value="5"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-cap">Ёмкость рынка<small>продажи затухают по мере насыщения: база приближается к этому числу и не превышает его</small></label></th><td><input id="fm-cap" data-u="шт." type="number" min="0" step="10" value="400"></td><td></td><td></td></tr>
-          </tbody>
-        </table>
+      <div class="pb-card">
+        <h3>Разработка</h3>
+        <p class="pb-hint">Оплата этапа по условиям раздела 07: 60 % в первый месяц этапа, 40 % в последний.</p>
+        <div class="pb-row"><label for="pb-c1">Этап I, ₽<small>инженерный путь</small></label><input type="number" id="pb-c1" value="37920000" min="0" step="100000"></div>
+        <div class="pb-row"><label for="pb-d1">Этап I, месяцев<small>с 1-го месяца проекта</small></label><input type="number" id="pb-d1" value="8" min="1" step="1"></div>
+        <div class="pb-row"><label for="pb-c2">Этап II, ₽<small>пользовательский продукт</small></label><input type="number" id="pb-c2" value="7200000" min="0" step="100000"></div>
+        <div class="pb-row"><label for="pb-s2">Этап II, начало<small>месяц проекта</small></label><input type="number" id="pb-s2" value="6" min="1" step="1"></div>
+        <div class="pb-row"><label for="pb-d2">Этап II, месяцев</label><input type="number" id="pb-d2" value="4" min="1" step="1"></div>
+        <label class="pb-chk"><input type="checkbox" id="pb-use3"><span>Добавить этап III<small>протокол пакетной агрегации, по решению заказчика</small></span></label>
+        <div class="pb-row"><label for="pb-c3">Этап III, ₽</label><input type="number" id="pb-c3" value="34800000" min="0" step="100000"></div>
+        <div class="pb-row"><label for="pb-s3">Этап III, начало<small>месяц проекта</small></label><input type="number" id="pb-s3" value="10" min="1" step="1"></div>
+        <div class="pb-row"><label for="pb-d3">Этап III, месяцев</label><input type="number" id="pb-d3" value="8" min="1" step="1"></div>
+        <div class="pb-row"><label for="pb-res">Резерв на разработку, %</label><input type="number" id="pb-res" value="0" min="0" max="100" step="5"></div>
       </div>
-      <div class="fm-mxw">
-        <table class="fm-mx">
-          <thead><tr><th>ЦОД</th><th></th><th></th><th></th></tr></thead>
-          <tbody>
-            <tr><th scope="row"><label for="fm-perServer">Подключений на сервер в каждом ЦОД<small>серверы ставятся парами: по одному в каждом ЦОД</small></label></th><td><input id="fm-perServer" data-u="шт." type="number" min="1" step="10" value="100"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-server">Сервер</label></th><td><input id="fm-server" data-u="₽" type="number" min="0" step="100000" value="1800000"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-srvOpex">Размещение и канал на сервер в месяц</label></th><td><input id="fm-srvOpex" data-u="₽/мес" type="number" min="0" step="10000" value="270000"></td><td></td><td></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="fm-derived" id="fm-d-ops"></p>
-    </div>
+    </form>
 
-    <div class="fm-step" role="group" aria-labelledby="fm-h4">
-      <h3 id="fm-h4"><span class="fm-n">08.4</span>Фундаментальные вложения в разработку</h3>
-      <p class="fm-hint">Этапы I и II из раздела 07 плюс резерв на непредвиденное. Оплата по условиям раздела 07: 60 % перед началом этапа, 40 % после приёмки; график платежей фиксирован. Этап III в модель не входит.</p>
-      <div class="fm-mxw">
-        <table class="fm-mx">
-          <thead><tr><th>Этапы I и II</th><th></th><th></th><th></th></tr></thead>
-          <tbody>
-            <tr><th scope="row"><label for="fm-rnd1">Этап I<small>с 1-го по 8-й месяц проекта</small></label></th><td><input id="fm-rnd1" data-u="₽" type="number" min="0" step="1000000" value="37920000"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-rnd2">Этап II<small>с 6-го по 9-й месяц проекта</small></label></th><td><input id="fm-rnd2" data-u="₽" type="number" min="0" step="1000000" value="7200000"></td><td></td><td></td></tr>
-            <tr><th scope="row"><label for="fm-reserve">Резерв на разработку<small>добавляется к сумме этапов</small></label></th><td><input id="fm-reserve" data-u="%" type="number" min="0" step="5" value="20"></td><td></td><td></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="fm-derived fm-total" id="fm-d-rnd"></p>
-    </div>
-  </form>
-
-  <div class="fm-res" aria-live="polite">
-    <div class="fm-hero">
-      <span class="label">Результат</span>
-      <p class="fm-lead" id="fm-r-lead"></p>
-      <p class="fm-when" id="fm-r-when"></p>
-    </div>
-
-    <div class="fm-facts">
-      <div class="fm-fact">
-        <span class="label">Пиковая потребность в деньгах</span>
-        <span class="v" id="fm-r-need"></span>
-        <span class="k" id="fm-r-need-n"></span>
-      </div>
-      <div class="fm-fact">
-        <span class="label" id="fm-r-after-h">Через год после окупаемости</span>
-        <dl class="fm-dl" id="fm-r-after"></dl>
-      </div>
-      <div class="fm-fact">
-        <span class="label">Один объект в среднем по тарифам</span>
-        <span class="v" id="fm-r-unit"></span>
-        <span class="k" id="fm-r-unit-n"></span>
-        <span class="v v2" id="fm-r-once"></span>
-        <span class="k" id="fm-r-once-n"></span>
-      </div>
-    </div>
-
-    <div class="tbl">
-      <table id="fm-unit">
-        <thead><tr><th>Один объект в месяц, ₽</th><th class="r">Базовый</th><th class="r">Промышленный</th><th class="r">Удалённые</th><th class="r">В среднем</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="tbl">
-      <table id="fm-once">
-        <thead><tr><th>Подключение одного объекта, разово, ₽</th><th class="r">Базовый</th><th class="r">Промышленный</th><th class="r">Удалённые</th><th class="r">В среднем</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div class="tbl">
-      <table id="fm-years">
-        <thead><tr><th>Показатель</th><th class="r">1 год</th><th class="r">2 года</th><th class="r">3 года</th><th class="r">5 лет</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="pb-out" aria-live="polite">
+      <div class="pb-kpis" id="pb-kpis"></div>
+      <p class="pb-unit" id="pb-unit"></p>
+      <figure class="pb-chart">
+        <figcaption class="pb-ch-h"><b>Деньги нарастающим итогом, млн ₽</b><span>ниже нуля — вложено, выше — заработано</span>
+          <span class="pb-leg" style="color:var(--accent)"><i></i>этап I</span>
+          <span class="pb-leg" style="color:var(--signal)"><i></i>этапы I и II</span>
+          <span class="pb-leg" id="pb-leg3" style="color:var(--pc)" hidden><i></i>этапы I–III</span></figcaption>
+        <div class="pb-plot"><svg id="pb-plot" viewBox="0 0 640 300" role="img" aria-label="Денежный поток нарастающим итогом по месяцам проекта"></svg></div>
+      </figure>
+      <h3>Если все продажи — один тариф</h3>
+      <div class="tbl"><table id="pb-scen"></table></div>
+      <h3>По годам, этапы I и II</h3>
+      <div class="tbl"><table id="pb-years"></table></div>
     </div>
   </div>
-
-  <figure class="fm-chart">
-    <figcaption class="fm-ch-h"><b>Денежный поток нарастающим итогом, млн ₽</b><span>с начала проекта; ниже нуля — вложения, выше — заработано</span><span class="fm-leg" hidden><i class="cur"></i>по калькулятору <i class="base"></i>рекомендуемые параметры</span></figcaption>
-    <div class="fm-plot"><svg id="fm-cash" viewBox="0 0 900 290" role="img" aria-label="Денежный поток нарастающим итогом по месяцам"></svg><div class="fm-tip" id="fm-tip-cash" hidden></div></div>
-  </figure>
-  <figure class="fm-chart">
-    <figcaption class="fm-ch-h"><b>Подключённых объектов</b><span>на конец месяца</span><span class="fm-leg" hidden><i class="cur"></i>по калькулятору <i class="base"></i>рекомендуемые параметры</span></figcaption>
-    <div class="fm-plot"><svg id="fm-objs" viewBox="0 0 900 230" role="img" aria-label="Число подключённых объектов по месяцам"></svg><div class="fm-tip" id="fm-tip-objs" hidden></div></div>
-  </figure>
-  <p class="cap col">Модель без налога на прибыль и без стоимости денег во времени; суммы с НДС, как введены. Каждый объект считается отдельным клиентом. Продажи растут по кварталам и равномерно распределены по месяцам квартала; отток списывается ежемесячно. Плановые продажи умножаются на долю ещё свободного рынка, поэтому они затухают по мере насыщения, и база асимптотически приближается к ёмкости рынка. После заданного числа проданных объектов операционные расходы составляют не меньше заданной доли выручки. Тарифы продаются в заданных долях; цены и расходы модели — средние по этим долям. Серверы ставятся парами (по одному в каждом ЦОД) с началом продаж и докупаются при росте. Персонал заказчика в расходы не входит. Разработка берётся с резервом и оплачивается по условиям раздела 07: этап I — 60 % в 1-м месяце и 40 % в 8-м, этап II — 60 % в 6-м месяце и 40 % в 9-м. Этап III в модель не входит.</p>
+  <p class="cap col">Окупаемость — момент, начиная с которого деньги нарастающим итогом не уходят ниже нуля до конца горизонта; дробная часть — доля месяца. Этапы II и III считаются сверх предыдущих: «+N» — на столько позже наступает окупаемость, если добавить этап. Модель без налога на прибыль и без стоимости денег во времени. Продажи равномерные с месяца начала продаж, отток списывается каждый месяц. Комплект оборудования клиент оплачивает отдельно, поэтому в модель он не входит; чистая прибыль с объекта — это то, что остаётся в месяц после SIM-карт, ЦОД и обслуживания.</p>
 </section>
 
 <section class="stack" id="s09">
@@ -1252,259 +1128,93 @@ function show(el){if(cur)cur.classList.remove('hl');cur=el;el.classList.add('hl'
 })();
 </script>
 <script>
+/* Payback calculator (section 08): monthly cash over the horizon; development is paid 60/40 per stage,
+   every active object brings its net profit each month; payback is computed for stage I alone, for I+II and for I-III. */
 (function(){
 'use strict';
-var form=document.getElementById('fm-form');if(!form)return;
-var NS='http://www.w3.org/2000/svg',H=60;
+var f=document.getElementById('pb-form');if(!f)return;
 function $(id){return document.getElementById(id);}
-/* OV substitutes field values when the model is re-run with one field put back to its recommended value */
-var OV=null;
-function v(id){if(OV&&OV.hasOwnProperty(id))return OV[id];var x=parseFloat($(id).value.replace(/[\s\u2009]/g,''));return isFinite(x)&&x>=0?x:0;}
-function E(tag,a,p){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
-function T(txt,a,p){var e=E('text',a,p);e.textContent=txt;return e;}
-/* thousands are split by a thin space (U+2009); numbers that must not wrap get white-space:nowrap in CSS */
-function loc(n,o){return n.toLocaleString('ru-RU',o).replace(/[\u00a0\u202f\s]/g,'\u2009');}
+function v(id){var x=parseFloat($(id).value);return isFinite(x)&&x>=0?x:0;}
+var NS='http://www.w3.org/2000/svg';
+function E(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function loc(n,o){return n.toLocaleString('ru-RU',o).replace(/[  \s]/g,' ');}
 function int(n){return loc(Math.round(n));}
-function rub(n){return (n<0?'− ':'')+int(Math.abs(n))+' ₽';}
-function mln(n){return (n<0?'− ':'')+loc(Math.abs(n)/1e6,{minimumFractionDigits:1,maximumFractionDigits:1})+' млн ₽';}
-function pl(n,f){n=Math.round(Math.abs(n));var a=n%10,b=n%100;return int(n)+' '+(b>=11&&b<=19?f[2]:a===1?f[0]:a>=2&&a<=4?f[1]:f[2]);}
-var OBJ=['объект','объекта','объектов'],OBJP=['объекте','объектах','объектах'],MON=['месяц','месяца','месяцев'];
-function monthName(m){var y=Math.ceil(m/12);return 'месяц '+m+' · '+y+'-й год';}
-function setHTML(id,html){$(id).innerHTML=html;}
-function b(x){return '<b>'+x+'</b>';}
+function mln(n){return (n<0?'− ':'')+loc(Math.abs(n)/1e6,{minimumFractionDigits:1,maximumFractionDigits:1});}
+function fx(n){return loc(n,{minimumFractionDigits:1,maximumFractionDigits:1});}
 
-/* development payments follow the terms in section 07: 60 % before a stage starts, 40 % after its acceptance */
-var RND=[{n:1,r:'I',from:1,to:8},{n:2,r:'II',from:6,to:9}];
-
-/* monthly simulation over 60 months: sales per quarter grow geometrically and spread over the months of the quarter,
-   churn is applied monthly from the yearly rate; planned sales are scaled by the share of the market still free
-   (1 - objects/capacity), so the base approaches the capacity asymptotically; after N sold objects operating costs are at least a set share of revenue (staff, field trips, replacements, sales); servers go in pairs (one per DC) from the sales start and are added
-   per N connections, development (with reserve) is paid on the fixed 60/40 schedule; prices and costs are the averages
-   over the tariff mix, which is exact while the mix is fixed because every term is linear in the object count */
-function model(p){
-  var rows=[],cum=0,active=0,sold=0,kits=0,maxSrv=0,cRate=1-Math.pow(1-p.churn/100,1/12),k=1+p.reserve/100,pay={};
-  RND.forEach(function(st){var sum=p['rnd'+st.n]*k;pay[st.from]=(pay[st.from]||0)+sum*.6;pay[st.to]=(pay[st.to]||0)+sum*.4;});
-  for(var m=1;m<=H;m++){
-    var nw=0;
-    if(m>=p.start){var q=Math.floor((m-p.start)/3),rate=p.q1*Math.pow(1+p.growth/100,q)/3;
-      rate*=p.cap>0?Math.max(0,1-active/p.cap):0;
-      var soldNow=sold+rate;nw=Math.floor(soldNow+1e-9)-Math.floor(sold+1e-9);sold=soldNow;}
-    var kept=active*(1-cRate);nw=Math.min(nw,Math.max(0,Math.floor(p.cap-kept+1e-9)));
-    active=kept+nw;
-    var n=Math.ceil(active-1e-9);
-    var srv=m>=p.start?2*Math.max(1,Math.ceil(n/p.perServer)):0;
-    var addSrv=Math.max(0,srv-maxSrv);maxSrv=Math.max(maxSrv,srv);
-    var revenue=active*p.fee+nw*p.setup;
-    var full=Math.max(0,Math.min(nw,p.kitFrom-1-kits)),kitCost=full*p.kit+(nw-full)*p.kit*(1-p.kitCut/100);kits+=nw;
-    var opex=active*p.sim+maxSrv*p.srvOpex;if(kits>=p.costFrom)opex=Math.max(opex,revenue*p.costPct/100);
-    var capex=kitCost+nw*p.install+addSrv*p.server+(pay[m]||0);
-    var cash=revenue-opex-capex;cum+=cash;
-    rows.push({m:m,nw:nw,active:active,n:n,srv:maxSrv,revenue:revenue,opex:opex,capex:capex,cash:cash,cum:cum});
+function stage(c,s,d,res){var a={},e=s+d-1;c*=1+res/100;a[s]=(a[s]||0)+.6*c;a[e]=(a[e]||0)+.4*c;return a;}
+function params(mix){
+  var w=mix||[v('pb-w1'),v('pb-w2'),v('pb-w3')],ws=w[0]+w[1]+w[2]||1;
+  return {net:(w[0]*v('pb-m1')+w[1]*v('pb-m2')+w[2]*v('pb-m3'))/ws,rate:v('pb-rate')/Number($('pb-per').value),
+    start:Math.max(1,Math.round(v('pb-start'))),churn:Math.min(100,v('pb-churn'))/100,H:Math.min(120,Math.max(12,Math.round(v('pb-h'))))};
+}
+function stages(){var r=v('pb-res');
+  return [stage(v('pb-c1'),1,Math.max(1,Math.round(v('pb-d1'))),r),
+          stage(v('pb-c2'),Math.max(1,Math.round(v('pb-s2'))),Math.max(1,Math.round(v('pb-d2'))),r),
+          stage(v('pb-c3'),Math.max(1,Math.round(v('pb-s3'))),Math.max(1,Math.round(v('pb-d3'))),r)];}
+function run(P,dev){
+  var cm=1-Math.pow(1-P.churn,1/12),N=0,cum=0,low=0,lowAt=1,s=[],years=[],y={profit:0,dev:0};
+  for(var t=1;t<=P.H;t++){
+    var d=0;dev.forEach(function(x){d+=x[t]||0;});
+    if(t>=P.start)N=N*(1-cm)+P.rate;
+    var profit=N*P.net;cum+=profit-d;s.push(cum);
+    if(cum<low){low=cum;lowAt=t;}
+    y.profit+=profit;y.dev+=d;
+    if(t%12===0){years.push({n:N,profit:y.profit,dev:y.dev,cum:cum,monthly:profit});y={profit:0,dev:0};}
   }
-  return rows;
+  /* payback: the month from which the cumulative cash stays at or above zero; fractional by linear interpolation */
+  var last=-1;for(var i=s.length-1;i>=0;i--)if(s[i]<0){last=i;break;}
+  var pb=null;if(last<0)pb=0;else if(last<s.length-1){var a=s[last],b=s[last+1];pb=last+1+(-a)/(b-a);}
+  return {s:s,pb:pb,low:low,lowAt:lowAt,end:cum,years:years,N:N};
 }
-
-function sumTo(rows,k,to){var s=0;for(var i=0;i<to;i++)s+=rows[i][k];return s;}
-
-var TAR=[{k:'b',n:'Базовый'},{k:'i',n:'Промышленный'},{k:'r',n:'Удалённые'}];
-
-function params(){
-  var tr=TAR.map(function(t){return {n:t.n,fee:v('fm-fee-'+t.k),setup:v('fm-setup-'+t.k),share:v('fm-share-'+t.k),kit:v('fm-kit-'+t.k),sim:v('fm-sim-'+t.k)};});
-  var sh=tr.reduce(function(a,t){return a+t.share;},0);
-  tr.forEach(function(t){t.w=sh>0?t.share/sh:1/tr.length;});
-  function avg(k){return tr.reduce(function(a,t){return a+t.w*t[k];},0);}
-  var p={fee:avg('fee'),setup:avg('setup'),kit:avg('kit'),sim:avg('sim'),q1:v('fm-q1'),growth:v('fm-growth'),start:Math.max(1,Math.min(H,Math.round(v('fm-start')))),churn:Math.min(100,v('fm-churn')),cap:v('fm-cap'),costPct:Math.min(40,Math.max(10,v('fm-costPct'))),costFrom:v('fm-costFrom'),
-    kitCut:Math.min(100,v('fm-kitCut')),kitFrom:Math.max(1,Math.round(v('fm-kitFrom'))),install:v('fm-install'),perServer:Math.max(1,v('fm-perServer')),server:v('fm-server'),srvOpex:v('fm-srvOpex'),
-    rnd1:v('fm-rnd1'),rnd2:v('fm-rnd2'),reserve:v('fm-reserve')};
-  return {tr:tr,p:p};
-}
+function when(r,H){return r.pb===null?'не за '+H+' мес':'месяц '+fx(r.pb);}
+function delta(a,b,to){if(a.pb===null||b.pb===null)return '';var d=b.pb-a.pb;return d>=.05?'+'+fx(d)+' мес к '+to:'+'+Math.round(d*30.4)+' дн. к '+to;}
 
 function render(){
-  var P0=params(),tr=P0.tr,p=P0.p;
-  var R=model(p),kRes=1+p.reserve/100,rndTotal=(p.rnd1+p.rnd2)*kRes;
+  var P=params(),D=stages(),s3=$('pb-use3').checked,w=[v('pb-w1'),v('pb-w2'),v('pb-w3')],ws=w[0]+w[1]+w[2];
+  $('pb-leg3').hidden=!s3;
+  $('pb-mix').textContent=(ws!==100?'Доли в сумме '+int(ws)+' %, считаются пропорционально. ':'')+'В среднем с объекта '+int(P.net)+' ₽ в месяц.';
+  var r1=run(P,[D[0]]),r2=run(P,[D[0],D[1]]),r3=s3?run(P,D):null;
+  function kpi(cls,k,r,d){return '<div class="pb-kpi '+cls+'"><span class="k">'+k+'</span><span class="v'+(r.pb===null?' no':'')+'">'+when(r,P.H)+'</span><span class="d">'+d+'</span></div>';}
+  $('pb-kpis').innerHTML=kpi('s1','Этап I окупается',r1,r1.pb!==null&&r1.pb>=P.start-1?'через '+fx(r1.pb-P.start+1)+' мес после начала продаж':'')+
+    kpi('s2','Этапы I и II окупаются',r2,delta(r1,r2,'этапу I'))+(s3?kpi('s3','Этапы I–III окупаются',r3,delta(r2,r3,'этапам I и II')):'')+
+    '<div class="pb-kpi"><span class="k">Пиковая потребность в деньгах, I и II</span><span class="v">'+mln(-r2.low)+' млн ₽</span><span class="d">в '+r2.lowAt+'-м месяце</span></div>'+
+    '<div class="pb-kpi"><span class="k">Итог за '+P.H+' мес, I и II</span><span class="v">'+mln(r2.end)+' млн ₽</span><span class="d">объектов на конец: '+int(r2.N)+'</span></div>';
+  var y1=Math.min(P.H,P.start+11),Ny=0,cm=1-Math.pow(1-P.churn,1/12);for(var t=P.start;t<=y1;t++)Ny=Ny*(1-cm)+P.rate;
+  var n=Math.round(Ny),a=n%10,b=n%100,word=b>=11&&b<=19?'объектов':a===1?'объект':a>=2&&a<=4?'объекта':'объектов';
+  $('pb-unit').innerHTML='Через год продаж работает <b>'+int(n)+'</b> '+word+', они приносят <b>'+mln(Ny*P.net)+' млн ₽</b> в месяц.';
+  draw([r1,r2,r3],P);
 
-  /* unit economics of one object, per tariff and on average */
-  var cut=1-p.kitCut/100,uSrv=2*p.srvOpex/p.perServer,oSrv=2*p.server/p.perServer;
-  tr.forEach(function(t){t.unit=t.fee-t.sim-uSrv;t.kitS=t.kit*cut;t.once=t.setup-t.kitS-p.install-oSrv;});
-  tr.forEach(function(t){t.other=Math.max(0,t.fee*p.costPct/100-t.sim-uSrv);t.unit-=t.other;});
-  var other=Math.max(0,p.fee*p.costPct/100-p.sim-uSrv),unit=p.fee-p.sim-uSrv-other,kitS=p.kit*cut,once=p.setup-kitS-p.install-oSrv;
+  var rows=[['Базовый',[1,0,0]],['Промышленный',[0,1,0]],['Удалённые объекты',[0,0,1]],['Ваш микс',w]];
+  var h='<thead><tr><th>Все продажи</th><th>₽ в месяц с объекта</th><th>Этап I</th><th>Этапы I и II</th>'+(s3?'<th>Этапы I–III</th>':'')+'<th>Пик, млн ₽</th></tr></thead><tbody>';
+  rows.forEach(function(x,i){var Q=params(x[1]),a=run(Q,[D[0]]),b=run(Q,[D[0],D[1]]),c=s3?run(Q,D):null;
+    function cell(r){return '<td class="n'+(r.pb===null?' no':'')+'">'+(r.pb===null?'нет за '+Q.H+' мес':'мес '+fx(r.pb))+'</td>';}
+    h+='<tr'+(i===3?' class="mine"':'')+'><td>'+x[0]+'</td><td class="n">'+int(Q.net)+'</td>'+cell(a)+cell(b)+(s3?cell(c):'')+'<td class="n">'+mln(-b.low)+'</td></tr>';});
+  $('pb-scen').innerHTML=h+'</tbody>';
 
-  /* derived lines under the input steps */
-  var firstYear=0;for(var i=p.start-1;i<Math.min(H,p.start+11);i++)firstYear+=R[i].nw;
-  function pct(w){return Math.round(w*100)+' %';}
-  setHTML('fm-d-price','При такой доле тарифов средний объект платит '+b(rub(p.fee))+' в месяц и '+b(rub(p.setup))+' за пусконаладку, за первый год — '+b(rub(p.setup+12*p.fee))+'. Доли продаж: '+tr.map(function(t){return t.n.toLowerCase()+' '+pct(t.w);}).join(', ')+'.');
-  setHTML('fm-d-cost','Средний комплект с монтажом обходится в '+b(rub(p.kit+p.install))+' для первых '+(p.kitFrom-1)+' комплектов и в '+b(rub(kitS+p.install))+' начиная с '+p.kitFrom+'-го, дальше в среднем '+b(rub(p.sim))+' в месяц на SIM-карты и трафик.');
-  setHTML('fm-d-ops','На один объект в месяц уходит '+b(rub(uSrv))+' на размещение и канал серверов в двух ЦОД. За первый год продаж подключается '+b(pl(firstYear,OBJ))+'.');
-  setHTML('fm-d-rnd','В модель входит '+b(rub(rndTotal))+' = '+rub(p.rnd1+p.rnd2)+' × '+loc(kRes,{maximumFractionDigits:2})+'. '+RND.map(function(st){var sum=p['rnd'+st.n]*kRes;return 'Этап '+st.r+': '+b(rub(sum*.6))+' в '+st.from+'-м месяце и '+b(rub(sum*.4))+' в '+st.to+'-м';}).join('. ')+'.');
-
-  /* results in sentences */
-  var minI=0;R.forEach(function(r,i){if(r.cum<R[minI].cum)minI=i;});
-  var pay=null;for(i=minI;i<R.length;i++){if(R[i].cum>=0){pay=R[i].m;break;}}
-  var need=-Math.min(0,R[minI].cum),last=R[H-1];
-  if(pay){
-    var P=R[pay-1],afterSales=pay-p.start+1;
-    setHTML('fm-r-lead',afterSales>0?'Проект окупается через '+b(pl(afterSales,MON))+' после начала продаж, на '+b(pl(P.n,OBJP)):'Проект окупается ещё до начала продаж');
-    setHTML('fm-r-when','Срок считается от первого месяца продаж: с него денежный поток нарастающим итогом, включая всю разработку, выходит в плюс за '+b(pl(afterSales,MON))+
-      ' (продажи начинаются в '+p.start+'-м месяце проекта, окупаемость — в '+pay+'-м). К этому моменту подключено '+pl(P.n,OBJ)+', выручка за месяц '+mln(P.revenue)+'.');
-  }else{
-    setHTML('fm-r-lead','На этих цифрах проект '+b('не окупается за пять лет'));
-    setHTML('fm-r-when','Через 60 месяцев денежный поток нарастающим итогом остаётся отрицательным: '+b(mln(last.cum))+' при '+pl(last.n,OBJP)+'. Чтобы выйти в плюс, нужны другие цены, расходы или темп продаж.');
-  }
-  var needEl=$('fm-r-need');needEl.textContent=need>0?mln(need):'0 ₽';needEl.className='v'+(need>0?' neg':'');
-  $('fm-r-need-n').textContent=need>0?'Самая глубокая точка денежного потока: '+R[minI].m+'-й месяц, '+pl(R[minI].n,OBJ)+(pay?'. Столько денег нужно, чтобы дойти до окупаемости.':'. Столько денег не хватает к концу горизонта.'):'Денежный поток не уходит в минус.';
-  var dl=$('fm-r-after');dl.innerHTML='';
-  function dd(k,val,cls){var dt=document.createElement('dt');dt.textContent=k;var d=document.createElement('dd');d.textContent=val;if(cls)d.className=cls;dl.appendChild(dt);dl.appendChild(d);}
-  if(pay){
-    var am=Math.min(H,pay+12),A=R[am-1];
-    $('fm-r-after-h').textContent=am===pay+12?'Через год после окупаемости (месяц '+am+')':'К концу горизонта (месяц '+am+', меньше года после окупаемости)';
-    dd('Подключённых объектов',int(A.n),'big');
-    dd('Выручка за месяц',mln(A.revenue));
-    dd('Операционная прибыль за месяц',mln(A.revenue-A.opex),A.revenue-A.opex<0?'neg':'');
-    dd('Накоплено с начала проекта',mln(A.cum),A.cum<0?'neg':'');
-  }else{
-    $('fm-r-after-h').textContent='К концу пятого года (месяц 60)';
-    dd('Подключённых объектов',int(last.n),'big');
-    dd('Выручка за месяц',mln(last.revenue));
-    dd('Операционная прибыль за месяц',mln(last.revenue-last.opex),last.revenue-last.opex<0?'neg':'');
-    dd('Накоплено с начала проекта',mln(last.cum),last.cum<0?'neg':'');
-  }
-  var ue=$('fm-r-unit');ue.textContent=rub(unit)+' в месяц';ue.className='v'+(unit<0?' neg':'');
-  $('fm-r-unit-n').textContent=unit>0?'остаётся от средней абонентской платы после всех операционных расходов зрелого бизнеса — '+int(unit/p.fee*100)+' % платы':'объект убыточен каждый месяц: расходы на него выше абонентской платы';
-  var oe=$('fm-r-once');oe.textContent=rub(once)+' на подключении';oe.className='v v2'+(once<0?' neg':'');
-  $('fm-r-once-n').textContent=once>=0?'пусконаладка покрывает комплект, монтаж и долю сервера сразу':('подключение в минус; объект отбивает его за '+(unit>0?pl(Math.ceil(-once/unit),MON):'— не отбивает'));
-
-  /* breakdown tables: one column per tariff plus the mix average */
-  function fill(tbody,rows,sumLabel,sum){
-    function cells(tr,vals,neg){vals.forEach(function(x){var c=tr.insertCell();c.className='r'+(neg&&x<0?' neg':'');c.textContent=(x<0?'− ':'')+int(Math.abs(x));});}
-    tbody.innerHTML='';
-    rows.forEach(function(r){var tr=tbody.insertRow();tr.insertCell().textContent=r[0];cells(tr,r[1]);});
-    var tr=tbody.insertRow();tr.className='sum';tr.insertCell().textContent=sumLabel;cells(tr,sum,true);
-  }
-  function col(k,sign,a){return tr.map(function(t){return sign*t[k];}).concat(sign*a);}
-  function same(x){return [x,x,x,x];}
-  fill($('fm-unit').tBodies[0],[['Абонентская плата',col('fee',1,p.fee)],['SIM-карты и трафик',col('sim',-1,p.sim)],['Доля серверов в двух ЦОД: размещение и канал',same(-uSrv)],['Прочие расходы после '+int(p.costFrom)+' объектов, до '+int(p.costPct)+' % выручки',col('other',-1,other)]],'Доход с объекта в месяц',col('unit',1,unit));
-  fill($('fm-once').tBodies[0],[['Пусконаладка',col('setup',1,p.setup)],['Комплект оборудования, с '+p.kitFrom+'-го комплекта',col('kitS',-1,kitS)],['Выезд и монтаж',same(-p.install)],['Доля серверов в двух ЦОД: покупка',same(-oSrv)]],'Доход с подключения',col('once',1,once));
-
-  /* yearly table */
-  var Y=[12,24,36,60],yb=$('fm-years').tBodies[0];yb.innerHTML='';
-  function row(label,f,cls){var tr=yb.insertRow();if(cls)tr.className=cls;tr.insertCell().textContent=label;Y.forEach(function(m){var c=tr.insertCell();var val=f(m);c.className='r'+(typeof val==='number'&&val<0?' neg':'');c.textContent=typeof val==='number'?mln(val):val;});}
-  row('Объектов на конец периода',function(m){return int(R[m-1].n);});
-  row('Выручка за период',function(m){return sumTo(R,'revenue',m);});
-  row('Операционные расходы за период',function(m){return sumTo(R,'opex',m);});
-  row('Операционная прибыль за период',function(m){return sumTo(R,'revenue',m)-sumTo(R,'opex',m);});
-  row('Вложения за период: разработка, серверы, комплекты',function(m){return sumTo(R,'capex',m);});
-  row('Денежный поток нарастающим итогом',function(m){return R[m-1].cum;},'sum');
-  row('Серверов в двух ЦОД',function(m){return int(R[m-1].srv);});
-
-  markFields(R);
-  /* the same model on the recommended values, drawn dashed under the current curve once any field is moved */
-  var B=null;
-  [].forEach.call(form.querySelectorAll('input[data-def]'),function(el){var d=Number(el.getAttribute('data-def'));if(Math.abs(v(el.id)-d)>1e-9){B=B||{};}});
-  if(B){OV={};[].forEach.call(form.querySelectorAll('input[data-def]'),function(el){OV[el.id]=Number(el.getAttribute('data-def'));});B=model(params().p);OV=null;}
-  [].forEach.call(document.querySelectorAll('#fm .fm-leg'),function(l){l.hidden=!B;});
-  drawCash(R,pay,minI,p.start,B);drawObjs(R,pay,p.start,B);
+  var t='<thead><tr><th>Год</th><th>Объектов на конец</th><th>Прибыль за год, млн ₽</th><th>Разработка, млн ₽</th><th>Нарастающим итогом, млн ₽</th></tr></thead><tbody>';
+  r2.years.forEach(function(y,i){t+='<tr><td>'+(i+1)+'</td><td class="n">'+int(y.n)+'</td><td class="n">'+mln(y.profit)+'</td><td class="n">'+mln(y.dev)+'</td><td class="n'+(y.cum<0?' no':'')+'">'+mln(y.cum)+'</td></tr>';});
+  $('pb-years').innerHTML=t+'</tbody>';
 }
 
-/* fields at the recommended value get a dashed border; a moved field turns green when it improves the five-year
-   cumulative cash compared with its recommended value and red when it makes it worse, other fields as they are */
-function markFields(R){
-  var now=R[H-1].cum;
-  [].forEach.call(form.querySelectorAll('input[data-def]'),function(el){
-    var def=Number(el.getAttribute('data-def')),cur=v(el.id),cls='is-def';
-    if(Math.abs(cur-def)>1e-9){OV={};OV[el.id]=def;var base=model(params().p)[H-1].cum;OV=null;cls=now>base+1?'is-up':now<base-1?'is-down':'is-mod';}
-    el.classList.remove('is-def','is-up','is-down','is-mod');el.classList.add(cls);
-    if(el._rb)el._rb.classList.toggle('off',cls==='is-def');
-    el.title=cls==='is-def'?'Рекомендуемое значение':'Рекомендуемое значение: '+int(def);
-  });
+function nice(x){var p=Math.pow(10,Math.floor(Math.log10(x))),m=x/p;return (m<=1?1:m<=2?2:m<=5?5:10)*p;}
+function draw(rs,P){
+  var svg=$('pb-plot');svg.textContent='';
+  var W=640,Hh=300,L=58,R=14,T=12,B=34,lo=0,hi=0;
+  rs.forEach(function(r){if(r)r.s.forEach(function(x){lo=Math.min(lo,x);hi=Math.max(hi,x);});});
+  var step=nice(Math.max(hi-lo,1e6)/5);lo=Math.floor(lo/step)*step;hi=Math.ceil(hi/step)*step;if(hi===lo)hi=lo+step;
+  function X(t){return L+(t-1)/(P.H-1)*(W-L-R);}function Y(y){return T+(hi-y)/(hi-lo)*(Hh-T-B);}
+  for(var g=lo;g<=hi+1;g+=step){E('line',{x1:L,x2:W-R,y1:Y(g),y2:Y(g),'class':Math.abs(g)<1?'zero':'grid-l'},svg);
+    E('text',{x:L-8,y:Y(g)+4,'text-anchor':'end'},svg).textContent=loc(g/1e6,{maximumFractionDigits:0});}
+  for(var m=12;m<=P.H;m+=12){E('line',{x1:X(m),x2:X(m),y1:T,y2:Hh-B,'class':'grid-l','stroke-dasharray':'2 4'},svg);
+    E('text',{x:X(m),y:Hh-12,'text-anchor':'middle'},svg).textContent=(m/12)+' год';}
+  E('text',{x:X(P.start),y:Hh-B+14,'text-anchor':'middle'},svg).textContent='продажи';
+  rs.forEach(function(r,i){if(!r)return;var d='';r.s.forEach(function(y,k){d+=(k?'L':'M')+X(k+1).toFixed(1)+','+Y(y).toFixed(1);});
+    E('path',{d:d,'class':'l l'+(i+1)},svg);
+    if(r.pb){var x=X(Math.max(1,r.pb));E('circle',{cx:x,cy:Y(0),r:5,'class':'m m'+(i+1)},svg);
+      E('text',{x:x+8,y:Y(0)-8-i*15,'class':'mt'},svg).textContent='мес '+fx(r.pb);}});
 }
-
-/* ---------- charts: one series each, shared x, synced hover ---------- */
-var X0=64,X1=884;
-function xm(m){return X0+(m-1)/(H-1)*(X1-X0);}
-function nice(lo,hi,n){var span=hi-lo||1,step=Math.pow(10,Math.floor(Math.log10(span/n))),err=span/n/step;step*=err>=7.5?10:err>=3.5?5:err>=1.5?2:1;return {lo:Math.floor(lo/step)*step,hi:Math.ceil(hi/step)*step,step:step};}
-function xAxis(svg,y0,y1,start){
-  for(var yr=1;yr<=5;yr++){var x=xm(yr*12);E('line',{x1:x,x2:x,y1:y0,y2:y1,'class':'grid'},svg);T(yr+(yr===1?' год':yr<5?' года':' лет'),{x:x,y:y1+16,'text-anchor':'middle'},svg);}
-  if(start>1){var xs=xm(start);E('line',{x1:xs,x2:xs,y1:y0,y2:y1,'class':'vline'},svg);T('старт продаж',{x:xs+5,y:y0+10},svg);}
-}
-/* label next to a marked point: to the left of the point in the right half of the plot, to the right otherwise */
-function label(svg,q,dy,txt){var left=q[0]>(X0+X1)/2;T(txt,{x:q[0]+(left?-8:8),y:q[1]+dy,'text-anchor':left?'end':'start','class':'mark-t'},svg);}
-var hover={};
-function hoverLayer(svg,key,y0,y1,tipId,fmt,R){
-  var xh=E('line',{x1:0,x2:0,y1:y0,y2:y1,'class':'xh',visibility:'hidden'},svg);
-  var hit=E('rect',{x:X0,y:y0,width:X1-X0,height:y1-y0,'class':'hit'},svg);
-  hover[key]={xh:xh,tip:$(tipId),fmt:fmt,svg:svg};
-  function at(evt){var b=svg.getBoundingClientRect(),sx=(evt.clientX-b.left)/b.width*900;var m=Math.round((sx-X0)/(X1-X0)*(H-1))+1;return Math.max(1,Math.min(H,m));}
-  function show(m){Object.keys(hover).forEach(function(k){var h=hover[k];var x=xm(m);h.xh.setAttribute('x1',x);h.xh.setAttribute('x2',x);h.xh.setAttribute('visibility','visible');
-    h.tip.hidden=false;h.tip.innerHTML=h.fmt(R[m-1]);var bw=h.svg.getBoundingClientRect().width,px=x/900*bw;h.tip.style.left=(px>bw*0.6?px-h.tip.offsetWidth-12:px+12)+'px';});}
-  function hide(){Object.keys(hover).forEach(function(k){hover[k].xh.setAttribute('visibility','hidden');hover[k].tip.hidden=true;});}
-  hit.addEventListener('mousemove',function(e){show(at(e));});
-  hit.addEventListener('mouseleave',hide);
-  hit.addEventListener('touchstart',function(e){show(at(e.touches[0]));},{passive:true});
-}
-function basePath(svg,B,f){if(B)E('path',{d:'M'+B.map(function(r){return xm(r.m).toFixed(1)+','+f(r).toFixed(1);}).join(' L'),'class':'line-base'},svg);}
-function drawCash(R,pay,mi,start,B){
-  var svg=$('fm-cash');svg.textContent='';var Y0=18,Y1=254;
-  var all=R.concat(B||[]),lo=Math.min(0,Math.min.apply(null,all.map(function(r){return r.cum;}))),hi=Math.max(0,Math.max.apply(null,all.map(function(r){return r.cum;})));
-  var s=nice(lo/1e6,hi/1e6,5);function ym(val){return Y1-(val/1e6-s.lo)/(s.hi-s.lo)*(Y1-Y0);}
-  for(var g=s.lo;g<=s.hi+1e-9;g+=s.step){var y=ym(g*1e6);E('line',{x1:X0,x2:X1,y1:y,y2:y,'class':Math.abs(g)<1e-9?'zero':'grid'},svg);T(loc(g),{x:X0-8,y:y+4,'text-anchor':'end'},svg);}
-  T('млн ₽',{x:X0-8,y:Y0-6,'text-anchor':'end'},svg);
-  xAxis(svg,Y0,Y1,start);
-  var z=ym(0),pts=R.map(function(r){return [xm(r.m),ym(r.cum)];});
-  var neg='M'+pts[0][0]+','+z,pos='M'+pts[0][0]+','+z;
-  pts.forEach(function(q){neg+=' L'+q[0]+','+Math.max(q[1],z);pos+=' L'+q[0]+','+Math.min(q[1],z);});
-  neg+=' L'+pts[pts.length-1][0]+','+z+' Z';pos+=' L'+pts[pts.length-1][0]+','+z+' Z';
-  E('path',{d:neg,'class':'area-neg'},svg);E('path',{d:pos,'class':'area-pos'},svg);
-  basePath(svg,B,function(r){return ym(r.cum);});
-  E('path',{d:'M'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' L'),'class':'line'},svg);
-  if(R[mi].cum<0){E('circle',{cx:pts[mi][0],cy:pts[mi][1],r:4,'class':'mark'},svg);label(svg,pts[mi],16,'пик вложений '+mln(-R[mi].cum)+', месяц '+R[mi].m);}
-  if(pay){var q=pts[pay-1];E('circle',{cx:q[0],cy:q[1],r:4,'class':'mark'},svg);label(svg,q,-10,'окупаемость, месяц '+pay);}
-  hoverLayer(svg,'cash',Y0,Y1,'fm-tip-cash',function(r){return monthName(r.m)+'<br>нарастающим итогом: <b>'+mln(r.cum)+'</b><br>за месяц: '+mln(r.cash)+(B?'<br>с рекомендуемыми параметрами: '+mln(B[r.m-1].cum):'');},R);
-}
-function drawObjs(R,pay,start,B){
-  var svg=$('fm-objs');svg.textContent='';var Y0=18,Y1=196;
-  var hi=Math.max(1,Math.max.apply(null,R.concat(B||[]).map(function(r){return r.n;})));var s=nice(0,hi,4);
-  function ym(val){return Y1-(val-s.lo)/(s.hi-s.lo)*(Y1-Y0);}
-  for(var g=s.lo;g<=s.hi+1e-9;g+=s.step){var y=ym(g);E('line',{x1:X0,x2:X1,y1:y,y2:y,'class':g===0?'zero':'grid'},svg);T(loc(g),{x:X0-8,y:y+4,'text-anchor':'end'},svg);}
-  T('объектов',{x:X0-8,y:Y0-6,'text-anchor':'end'},svg);
-  xAxis(svg,Y0,Y1,start);
-  var pts=R.map(function(r){return [xm(r.m),ym(r.n)];}),z=ym(0);
-  E('path',{d:'M'+pts[0][0]+','+z+' L'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' L')+' L'+pts[pts.length-1][0]+','+z+' Z','class':'area-pos'},svg);
-  basePath(svg,B,function(r){return ym(r.n);});
-  E('path',{d:'M'+pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' L'),'class':'line'},svg);
-  if(pay){var q=pts[pay-1];E('circle',{cx:q[0],cy:q[1],r:4,'class':'mark'},svg);label(svg,q,-10,'окупаемость: '+pl(R[pay-1].n,OBJ));}
-  hoverLayer(svg,'objs',Y0,Y1,'fm-tip-objs',function(r){return monthName(r.m)+'<br>объектов: <b>'+int(r.n)+'</b>, новых за месяц: '+int(r.nw)+'<br>серверов в двух ЦОД: '+r.srv+(B?'<br>с рекомендуемыми параметрами: '+int(B[r.m-1].n):'');},R);
-}
-
-/* the recommended value of every field is its initial value */
-[].forEach.call(form.querySelectorAll('input[type=number]'),function(el){el.setAttribute('data-def',parseFloat(el.getAttribute('value')));});
-/* every field: the unit sits inside it on the right, and a reset button next to it puts the recommended value back */
-[].forEach.call(form.querySelectorAll('input[data-def]'),function(el){
-  var w=document.createElement('span'),box=document.createElement('span'),rb=document.createElement('button');
-  w.className='fm-in';box.className='fm-box';el.parentNode.insertBefore(w,el);box.appendChild(el);w.appendChild(box);
-  if(el.getAttribute('data-u')){var u=document.createElement('span');u.className='fm-u';u.textContent=el.getAttribute('data-u');box.appendChild(u);el.style.paddingRight=(u.textContent.length*0.62+1.4)+'em';}
-  rb.type='button';rb.className='fm-reset';rb.textContent='↺';rb.title='Вернуть рекомендуемое значение';rb.setAttribute('aria-label','Вернуть рекомендуемое значение');
-  rb.addEventListener('click',function(){var d=Number(el.getAttribute('data-def'));el.value=el.type==='text'?int(d):d;render();el.focus();});
-  w.appendChild(rb);el._rb=rb;
-});
-/* money fields: plain text with thin-space thousands; arrows keep the step of the former number input */
-[].forEach.call(form.querySelectorAll('input[type=number]'),function(el){
-  if(Number(el.value)<1000)return;
-  var step=Number(el.getAttribute('step'))||1;
-  el.type='text';el.inputMode='numeric';el.autocomplete='off';el.value=int(Number(el.value));
-  el.addEventListener('input',function(){
-    var pos=el.selectionStart,digits=el.value.slice(0,pos).replace(/\D/g,'').length,raw=el.value.replace(/\D/g,'');
-    el.value=raw?int(Number(raw)):'';
-    for(pos=0;digits>0&&pos<el.value.length;pos++)if(/\d/.test(el.value[pos]))digits--;
-    el.setSelectionRange(pos,pos);});
-  el.addEventListener('keydown',function(e){
-    if(e.key!=='ArrowUp'&&e.key!=='ArrowDown')return;e.preventDefault();
-    el.value=int(Math.max(0,v(el.id)+(e.key==='ArrowUp'?step:-step)));render();});
-});
-form.addEventListener('input',render);
-/* a typed value outside the field's min/max is pulled back into range when the field is left */
-form.addEventListener('change',function(e){var el=e.target;if(el.type!=='number')return;var x=parseFloat(el.value),lo=parseFloat(el.min),hi=parseFloat(el.max);
-  if(!isFinite(x))return;if(isFinite(lo)&&x<lo)el.value=lo;else if(isFinite(hi)&&x>hi)el.value=hi;else return;render();});
-form.addEventListener('submit',function(e){e.preventDefault();});
+f.addEventListener('input',render);f.addEventListener('change',render);f.addEventListener('submit',function(e){e.preventDefault();});
 render();
 })();
 </script>
